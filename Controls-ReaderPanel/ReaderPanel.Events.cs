@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Controls_ReaderPanel
+namespace Richasy.Controls.Reader
 {
-    public class Class1
+    public partial class ReaderPanel
     {
     }
 }

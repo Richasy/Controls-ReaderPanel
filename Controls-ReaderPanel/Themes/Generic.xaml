@@ -1,0 +1,44 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:view="using:Richasy.Controls.Reader.Views"
+    xmlns:local="using:Richasy.Controls.Reader">
+
+    <Style TargetType="local:ReaderPanel" >
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:ReaderPanel">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <ContentPresenter x:Name="HeaderPresenter" Content="{TemplateBinding Header}"/>
+                        <ContentPresenter x:Name="MainPresenter" Content="{TemplateBinding Content}" Grid.Row="1"/>
+                        <ContentPresenter x:Name="FooterPresenter" Content="{TemplateBinding Footer}" Grid.Row="2"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="view:TxtView" >
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="view:TxtView">
+                    <Border Background="{TemplateBinding Background}">
+                        <Grid x:Name="TxtGrid">
+                            <RichTextBlock x:Name="TxtBlock"
+                                       TextWrapping="Wrap"
+                                       IsTextSelectionEnabled="True"
+                                       ContextFlyout="{x:Null}"
+                                       SelectionFlyout="{x:Null}"
+                                       />
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>
