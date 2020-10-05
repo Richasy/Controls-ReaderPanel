@@ -68,7 +68,7 @@ namespace Richasy.Controls.Reader.Views
             base.OnApplyTemplate();
         }
 
-        public void SetContent(string Content, TxtViewStartMode mode = TxtViewStartMode.First, int startLength = 0)
+        public void SetContent(string Content, ReaderStartMode mode = ReaderStartMode.First, int startLength = 0)
         {
             _isSizeChangeLoaded = false;
             _content = Content;
@@ -80,13 +80,13 @@ namespace Richasy.Controls.Reader.Views
             var index = 0;
             switch (mode)
             {
-                case TxtViewStartMode.First:
+                case ReaderStartMode.First:
                     index = 0;
                     break;
-                case TxtViewStartMode.Last:
+                case ReaderStartMode.Last:
                     index = Count - 1;
                     break;
-                case TxtViewStartMode.Stay:
+                case ReaderStartMode.Stay:
                     index = Index > Count - 1 ? Count - 1 : Index;
                     break;
             }

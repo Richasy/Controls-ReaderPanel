@@ -1,6 +1,6 @@
 ﻿namespace Richasy.Controls.Reader.Enums
 {
-    public enum TxtViewStartMode
+    public enum ReaderStartMode
     {
         First, Last, Stay
     }
