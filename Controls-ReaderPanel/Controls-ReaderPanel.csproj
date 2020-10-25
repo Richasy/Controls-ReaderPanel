@@ -155,6 +155,7 @@
     <Compile Include="Models\EventDelayer.cs" />
     <Compile Include="Models\EventWaiter.cs" />
     <Compile Include="Models\HtmlHelper.cs" />
+    <Compile Include="Models\LinkEventArgs.cs" />
     <Compile Include="Models\PositionEventArgs.cs" />
     <Compile Include="Models\ReaderStyle.cs" />
     <Compile Include="Models\TxtViewStyle.cs" />
@@ -188,6 +189,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Assets\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Views\EpubView.Properties.cs" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

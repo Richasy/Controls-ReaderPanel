@@ -5,10 +5,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Gaming.Input.ForceFeedback;
+using Windows.System;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -25,6 +27,8 @@ namespace Richasy.Controls.Reader.Models
         private EpubViewStyle Style { get; set; }
 
         private List<Block> RenderBlocks { get; set; }
+
+        public static EventHandler<LinkEventArgs> LinkTapped;
 
         private HtmlDocument HtmlDocument = new HtmlDocument();
 
@@ -131,6 +135,10 @@ namespace Richasy.Controls.Reader.Models
             var p = parent as Paragraph;
             switch (node.Name.ToLower())
             {
+                case "#text":
+                    if (!string.IsNullOrEmpty(node.InnerText.Trim()))
+                        p.Inlines.Add(new Run() { Text = node.GetDirectInnerText().Trim() });
+                    break;
                 case "hr":
                     p.Inlines.Add(CreateLineThrough());
                     break;
@@ -164,10 +172,165 @@ namespace Richasy.Controls.Reader.Models
                 case "ul":
                     CreateList(node, p, node.Name.ToLower() == "ol");
                     break;
+                case "b":
+                case "bold":
+                case "strong":
+                    p.Inlines.Add(CreateBold(node));
+                    break;
+                case "a":
+                    if (node.ChildNodes.Count >= 1 && (node.FirstChild.Name.Equals("img", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        var hyperImage = await CreateImageAsync(node.FirstChild, true);
+                        if (hyperImage != null)
+                            p.Inlines.Add(hyperImage);
+                    }
+                    else
+                        p.Inlines.Add(CreateHyperLink(node));
+                    break;
+                case "sup":
+                    p.Inlines.Add(CreateSuperscript(node));
+                    break;
+                case "sub":
+                    p.Inlines.Add(CreateSubscript(node));
+                    break;
+                case "em":
+                case "i":
+                    p.Inlines.Add(CreateItalic(node));
+                    break;
+                case "u":
+                    p.Inlines.Add(CreateUnderline(node));
+                    break;
+                case "s":
+                case "del":
+                    p.Inlines.Add(CreateStrikeThrough(node));
+                    break;
+                case "code":
+                    p.Inlines.Add(CreateCodeInline(node));
+                    break;
                 default:
+                    p.Inlines.Add(new Run() { Text = node.GetDirectInnerText().Trim() });
                     break;
             }
-            return parent;
+            return p;
+        }
+
+        private Inline CreateCodeInline(HtmlNode node)
+        {
+            if (string.IsNullOrEmpty(node.InnerText))
+                return null;
+            var span = new Span();
+            var border = new Border
+            {
+                BorderBrush = new SolidColorBrush(Style.Foreground),
+                Padding = new Thickness(5, 3, 5, 3),
+                BorderThickness = new Thickness(1)
+            };
+            var textBlock = new TextBlock
+            {
+                FontSize = Style.FontSize / 1.5,
+                Text = WebUtility.HtmlDecode(node.InnerText)
+            };
+            border.Child = textBlock;
+            var inlineContainer = new InlineUIContainer();
+            inlineContainer.Child = border;
+            span.Inlines.Add(inlineContainer);
+            return span;
+        }
+        private Inline CreateItalic(HtmlNode node)
+        {
+            if (string.IsNullOrEmpty(node.InnerText.Trim()))
+                return null;
+            Span s = new Span();
+            s.Inlines.Add(new Run() { Text = node.InnerText.Trim() + " ", FontStyle = FontStyle.Italic });
+            return s;
+        }
+        private Inline CreateUnderline(HtmlNode node)
+        {
+            if (string.IsNullOrEmpty(node.InnerText.Trim()))
+                return null;
+            Span s = new Span();
+            s.Inlines.Add(new Run() { Text = node.InnerText.Trim(), TextDecorations = TextDecorations.Underline });
+            return s;
+        }
+        private Inline CreateStrikeThrough(HtmlNode node)
+        {
+            if (string.IsNullOrEmpty(node.InnerText.Trim()))
+                return null;
+            Span s = new Span();
+            s.Inlines.Add(new Run() { Text = node.InnerText.Trim(), TextDecorations = TextDecorations.Strikethrough });
+            return s;
+        }
+
+        private Inline CreateSubscript(HtmlNode node)
+        {
+            var container = new InlineUIContainer();
+            var text = new TextBlock();
+            text.Text = node.InnerText.Trim();
+            text.FontSize = Style.FontSize / 1.5;
+            text.Margin = new Thickness(5, 0, 5, -5);
+            container.Child = text;
+            return container;
+        }
+
+        private Inline CreateSuperscript(HtmlNode node)
+        {
+            var container = new InlineUIContainer();
+            if (node.ChildNodes.Any(p => p.Name.Equals("a", StringComparison.OrdinalIgnoreCase)))
+            {
+                var children = node.ChildNodes.Where(n => n.Name.Equals("a", StringComparison.OrdinalIgnoreCase)).Select(p => CreateHyperLink(p, true)); ;
+                return children.Where(p => p != null).FirstOrDefault();
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(node.InnerText.Trim()))
+                    return null;
+                var text = new TextBlock();
+                text.Text = node.InnerText.Trim();
+                text.FontSize = Style.FontSize / 1.5;
+                text.Margin = new Thickness(5, 0, 5, Style.FontSize / -2);
+                container.Child = text;
+            }
+            return container;
+        }
+
+        private Inline CreateHyperLink(HtmlNode node, bool isInline = false)
+        {
+            if (string.IsNullOrEmpty(node.InnerText))
+                return null;
+            string link = node.GetAttributeValue("href", "none");
+            var sp = link.Split('#', StringSplitOptions.RemoveEmptyEntries);
+            var args = new LinkEventArgs();
+            if (sp.Length > 1)
+                args.FileName = sp[0];
+            args.Id = sp.Last();
+            if (link.IndexOf("://") == -1)
+                link = "jump://" + link;
+            var cont = new InlineUIContainer();
+            var btn = new HyperlinkButton();
+            btn.VerticalAlignment = VerticalAlignment.Center;
+            btn.Content = node.InnerText;
+            btn.Foreground = new SolidColorBrush(Style.Foreground);
+            if (isInline)
+                btn.Margin = new Thickness(0, 0, 0, Style.FontSize / -3);
+            btn.Tapped += async (_s, _e) =>
+            {
+                _e.Handled = true;
+                if (link.StartsWith("jump://") && !args.Id.Contains("html"))
+                    LinkTapped?.Invoke(_s, args);
+                else
+                    await Launcher.LaunchUriAsync(new Uri(link));
+            };
+            cont.Child = btn;
+            return cont;
+        }
+
+        private Inline CreateBold(HtmlNode node)
+        {
+            if (string.IsNullOrEmpty(node.InnerText.Trim()))
+                return null;
+            Span s = new Span();
+            s.Inlines.Add(new Run() { Text = node.InnerText.Trim(), FontWeight = FontWeights.Bold });
+            return s;
         }
 
         private Inline CreateLineThrough()
