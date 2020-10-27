@@ -1,4 +1,5 @@
 ﻿using Richasy.Controls.Reader.Models;
+using Richasy.Controls.Reader.Models.Epub;
 using Windows.UI.Composition;
 using Windows.UI.Composition.Interactions;
 using Windows.UI.Input;
@@ -9,10 +10,13 @@ using Windows.UI.Xaml.Media;
 
 namespace Richasy.Controls.Reader.Views
 {
-    public partial class TxtView
+    public partial class EpubView
     {
-        internal RichTextBlock _txtBlock;
-        internal Grid _txtGrid;
+        internal RichTextBlock _epubBlock;
+        internal Grid _epubGrid;
+
+        private HtmlHelper helper;
+        public EpubBook Book { get; set; }
 
         public int _startTextIndex = 0;
         string _content;
@@ -27,12 +31,12 @@ namespace Richasy.Controls.Reader.Views
 
         private double ParentWidth
         {
-            get => (VisualTreeHelper.GetParent(_txtGrid) as FrameworkElement).ActualWidth;
+            get => (VisualTreeHelper.GetParent(_epubGrid) as FrameworkElement).ActualWidth;
         }
 
         public string SelectedText
         {
-            get => _txtBlock.SelectedText;
+            get => _epubBlock.SelectedText;
         }
 
         Compositor compositor;

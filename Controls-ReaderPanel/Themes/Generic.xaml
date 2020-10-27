@@ -41,4 +41,23 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <Style TargetType="view:EpubView" >
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="view:EpubView">
+                    <Border Background="{TemplateBinding Background}">
+                        <Grid x:Name="EpubGrid">
+                            <RichTextBlock x:Name="EpubBlock"
+                                       TextWrapping="Wrap"
+                                       IsTextSelectionEnabled="True"
+                                       ContextFlyout="{x:Null}"
+                                       SelectionFlyout="{x:Null}"
+                                       />
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

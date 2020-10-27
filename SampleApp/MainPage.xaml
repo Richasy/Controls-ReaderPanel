@@ -14,13 +14,20 @@
                 <TextBlock Text="Header"/>
             </reader:ReaderPanel.Header>
             <reader:ReaderPanel.Content>
-                <views:TxtView x:Name="View" Loaded="View_Loaded">
+                <!--<views:TxtView x:Name="View" Loaded="View_Loaded">
                     <views:TxtView.ReadFlyout>
                         <MenuFlyout>
                             <MenuFlyoutItem Icon="Add" Text="测试"/>
                         </MenuFlyout>
                     </views:TxtView.ReadFlyout>
-                </views:TxtView>
+                </views:TxtView>-->
+                <views:EpubView x:Name="View" Loaded="View_Loaded_1">
+                    <views:EpubView.ReadFlyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem Icon="Add" Text="测试"/>
+                        </MenuFlyout>
+                    </views:EpubView.ReadFlyout>
+                </views:EpubView>
             </reader:ReaderPanel.Content>
             <reader:ReaderPanel.Footer>
                 <TextBox Text="Footer"/>

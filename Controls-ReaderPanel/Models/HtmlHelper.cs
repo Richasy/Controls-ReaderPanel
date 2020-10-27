@@ -26,16 +26,23 @@ namespace Richasy.Controls.Reader.Models
         private string HtmlContent { get; set; }
         private EpubViewStyle Style { get; set; }
 
-        private List<Block> RenderBlocks { get; set; }
+        public List<Block> RenderBlocks { get; private set; }
 
-        public static EventHandler<LinkEventArgs> LinkTapped;
+        public EventHandler<LinkEventArgs> LinkTapped;
 
         private HtmlDocument HtmlDocument = new HtmlDocument();
+        private List<EpubByteFile> Images;
 
-        public HtmlHelper(string html, List<EpubByteFile> images, EpubViewStyle style)
+
+        public HtmlHelper(List<EpubByteFile> images, EpubViewStyle style)
+        {
+            Images = images;
+            Style = style;
+        }
+
+        public async Task InitAsync(string html)
         {
             HtmlContent = GetBodyString(html);
-            Style = style;
             RenderBlocks = new List<Block>();
             HtmlDocument.LoadHtml(HtmlContent);
 
@@ -46,7 +53,7 @@ namespace Richasy.Controls.Reader.Models
                     string src = img.Attributes["src"].Value;
                     var sp = src.Split('/');
                     src = sp.Last();
-                    var image = images.Where(i => i.AbsolutePath.IndexOf(src, StringComparison.OrdinalIgnoreCase) != -1).FirstOrDefault();
+                    var image = Images.Where(i => i.AbsolutePath.IndexOf(src, StringComparison.OrdinalIgnoreCase) != -1).FirstOrDefault();
                     if (image == null)
                         continue;
                     string base64 = Convert.ToBase64String(image.Content);
@@ -57,7 +64,10 @@ namespace Richasy.Controls.Reader.Models
                     continue;
                 }
             }
+
+            await RenderAsync(HtmlDocument.DocumentNode.FirstChild, null);
         }
+
         string GetBodyString(string html)
         {
             var regex = new Regex(@"<body(.|\s|\r|\n|\f)*</body>");
@@ -97,7 +107,7 @@ namespace Richasy.Controls.Reader.Models
                     {
                         foreach (var child in node.ChildNodes)
                         {
-                            var block = await CreateElementFromNode(child, null);
+                            var block = await CreateElementFromNode(child, parent);
                             RenderBlocks.Add(block);
                         }
                     }

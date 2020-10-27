@@ -165,7 +165,11 @@
     <Compile Include="ReaderPanel.Fields.cs" />
     <Compile Include="ReaderPanel.Methods.cs" />
     <Compile Include="ReaderPanel.Properties.cs" />
-    <Compile Include="Views\EpubView.cs" />
+    <Compile Include="Views\EpubView\EpubView.cs" />
+    <Compile Include="Views\EpubView\EpubView.Events.cs" />
+    <Compile Include="Views\EpubView\EpubView.Fields.cs" />
+    <Compile Include="Views\EpubView\EpubView.Methods.cs" />
+    <Compile Include="Views\EpubView\EpubView.Properties.cs" />
     <Compile Include="Views\TxtView\TxtView.cs" />
     <Compile Include="Views\TxtView\TxtView.Events.cs" />
     <Compile Include="Views\TxtView\TxtView.Fields.cs" />
@@ -189,9 +193,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Assets\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Views\EpubView.Properties.cs" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
