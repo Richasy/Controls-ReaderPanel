@@ -108,7 +108,8 @@ namespace Richasy.Controls.Reader.Models
                         foreach (var child in node.ChildNodes)
                         {
                             var block = await CreateElementFromNode(child, parent);
-                            RenderBlocks.Add(block);
+                            if (parent == null)
+                                RenderBlocks.Add(block);
                         }
                     }
                 }
@@ -139,7 +140,6 @@ namespace Richasy.Controls.Reader.Models
 
         private async Task<Block> CreateElementFromNode(HtmlNode node, Block parent)
         {
-            bool hasParent = parent != null;
             if (parent == null)
                 parent = new Paragraph();
             var p = parent as Paragraph;
@@ -154,7 +154,7 @@ namespace Richasy.Controls.Reader.Models
                     break;
                 case "img":
                 case "image":
-                    var image = await CreateImageAsync(node, hasParent);
+                    var image = await CreateImageAsync(node, p.Inlines.Count == 0);
                     if (image != null)
                         p.Inlines.Add(image);
                     break;
@@ -165,6 +165,7 @@ namespace Richasy.Controls.Reader.Models
                 case "aside":
                 case "article":
                 case "header":
+                case "span":
                     await RenderAsync(node, parent);
                     break;
                 case "h1":
@@ -195,7 +196,12 @@ namespace Richasy.Controls.Reader.Models
                             p.Inlines.Add(hyperImage);
                     }
                     else
-                        p.Inlines.Add(CreateHyperLink(node));
+                    {
+                        var link = CreateHyperLink(node);
+                        if (link != null)
+                            p.Inlines.Add(link);
+                    }
+
                     break;
                 case "sup":
                     p.Inlines.Add(CreateSuperscript(node));
