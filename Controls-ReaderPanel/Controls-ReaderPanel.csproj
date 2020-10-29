@@ -122,6 +122,7 @@
   <ItemGroup>
     <Compile Include="Enums\ReaderType.cs" />
     <Compile Include="Enums\ReaderStartMode.cs" />
+    <Compile Include="Models\Chapter.cs" />
     <Compile Include="Models\EpubViewStyle.cs" />
     <Compile Include="Models\Epub\EpubArchive.cs" />
     <Compile Include="Models\Epub\EpubBook.cs" />
@@ -154,7 +155,8 @@
     <Compile Include="Models\Epub\Misc\Html.cs" />
     <Compile Include="Models\EventDelayer.cs" />
     <Compile Include="Models\EventWaiter.cs" />
-    <Compile Include="Models\HtmlHelper.cs" />
+    <Compile Include="Models\Helpers\EncodingHelper.cs" />
+    <Compile Include="Models\Helpers\HtmlHelper.cs" />
     <Compile Include="Models\LinkEventArgs.cs" />
     <Compile Include="Models\PositionEventArgs.cs" />
     <Compile Include="Models\ReaderStyle.cs" />
@@ -179,10 +181,13 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack">
-      <Version>1.11.24</Version>
+      <Version>1.11.26</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.2.10</Version>
+    </PackageReference>
+    <PackageReference Include="UDE.CSharp.UWP">
+      <Version>1.0.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

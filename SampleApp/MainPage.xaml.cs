@@ -32,7 +32,7 @@ namespace SampleApp
         {
             var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/中信国学大典·第1辑.epub"));
             var book = await EpubReader.Read(file, Encoding.Default);
-            var chapter = book.SpecialResources.HtmlInReadingOrder[7];
+            var chapter = book.SpecialResources.HtmlInReadingOrder[9];
             //var htmlFile = book.Resources.Html.Where(p => p.AbsolutePath.Equals(chapter.AbsolutePath, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
             if (chapter != null)
             {
