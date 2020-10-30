@@ -14,7 +14,7 @@ namespace Richasy.Controls.Reader.Views
     {
         public event EventHandler PrevPageSelected;
         public event EventHandler NextPageSelected;
-        public event EventHandler<int> SelectionChanged;
+        public event EventHandler<int> ProgressChanged;
         public event EventHandler<bool> LoadingChanged;
         public event EventHandler<PositionEventArgs> TouchHolding;
         public event EventHandler<PositionEventArgs> TouchTapped;
@@ -29,9 +29,9 @@ namespace Richasy.Controls.Reader.Views
             NextPageSelected?.Invoke(this, EventArgs.Empty);
         }
 
-        private void OnSelectionChanged()
+        private void OnProgressChanged()
         {
-            SelectionChanged?.Invoke(this, _startTextIndex);
+            ProgressChanged?.Invoke(this, _startTextIndex);
         }
 
         private void EpubView_SizeChanged(object sender, SizeChangedEventArgs e)

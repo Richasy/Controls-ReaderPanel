@@ -48,7 +48,7 @@ namespace Richasy.Controls.Reader.Views
                     }
                     if (index < 0) sender.OnPrevPageSelected();
                     else if (index > sender.Count - 1) sender.OnNextPageSelected();
-                    sender.OnSelectionChanged();
+                    sender.OnProgressChanged();
                 }
             }
         }

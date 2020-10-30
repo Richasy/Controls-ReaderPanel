@@ -68,7 +68,7 @@ namespace Richasy.Controls.Reader.Models
             await RenderAsync(HtmlDocument.DocumentNode.FirstChild, null);
         }
 
-        string GetBodyString(string html)
+        public static string GetBodyString(string html)
         {
             var regex = new Regex(@"<body(.|\s|\r|\n|\f)*</body>");
             var content = regex.Match(html).Value;
