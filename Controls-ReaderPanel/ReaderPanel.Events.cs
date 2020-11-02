@@ -11,7 +11,9 @@ namespace Richasy.Controls.Reader
     {
         public event EventHandler<Chapter> ChapterChanged;
         public event EventHandler<History> ProgressChanged;
-        public event EventHandler<bool> LoadingChanged;
+        public event EventHandler<List<Chapter>> ChapterLoaded;
+        public event EventHandler OpenStarting;
+        public event EventHandler OpenCompleted;
         public event EventHandler<PositionEventArgs> TouchHolding;
         public event EventHandler<PositionEventArgs> TouchTapped;
 
@@ -86,6 +88,12 @@ namespace Richasy.Controls.Reader
             }
             var history = new History(CurrentChapter, addonLength, progress);
             ProgressChanged?.Invoke(this, history);
+        }
+
+        public void OnLoad(object sender, bool e)
+        {
+            if (e)
+                OpenCompleted?.Invoke(this, EventArgs.Empty);
         }
     }
 }

@@ -31,6 +31,12 @@ namespace Richasy.Controls.Reader
             base.OnApplyTemplate();
         }
 
+        /// <summary>
+        /// 打开书籍文件
+        /// </summary>
+        /// <param name="bookFile">书籍文件</param>
+        /// <param name="style">阅读器样式</param>
+        /// <returns></returns>
         public async Task OpenAsync(StorageFile bookFile, ReaderStyle style)
         {
             if (bookFile == null)
@@ -41,7 +47,7 @@ namespace Richasy.Controls.Reader
             {
                 throw new NotSupportedException("File type not support (Currently only support txt and epub file)");
             }
-
+            OpenStarting?.Invoke(this, EventArgs.Empty);
             if (extension == ".txt")
             {
                 if (!(style is TxtViewStyle))
@@ -55,8 +61,8 @@ namespace Richasy.Controls.Reader
                         _txtView = new TxtView();
                         _txtView.PrevPageSelected += OnPrevPageSelected;
                         _txtView.NextPageSelected += OnNextPageSelected;
-                        _txtView.LoadingChanged += (_s, _e) => { LoadingChanged?.Invoke(_s, _e); };
-                        _txtView.ProgressChanged += (_s, _e) => { ProgressChanged?.Invoke(_s, _e); };
+                        _txtView.LoadingChanged += OnLoad;
+                        _txtView.ProgressChanged += OnProgressChanged;
                         _txtView.TouchHolding += (_s, _e) => { TouchHolding?.Invoke(_s, _e); };
                         _txtView.TouchTapped += (_s, _e) => { TouchTapped?.Invoke(_s, _e); };
                     }
@@ -79,8 +85,8 @@ namespace Richasy.Controls.Reader
                         _epubView = new EpubView();
                         _epubView.PrevPageSelected += OnPrevPageSelected;
                         _epubView.NextPageSelected += OnNextPageSelected;
-                        _epubView.LoadingChanged += (_s, _e) => { LoadingChanged?.Invoke(_s, _e); };
-                        _epubView.ProgressChanged += (_s, _e) => { ProgressChanged?.Invoke(_s, _e); };
+                        _epubView.LoadingChanged += OnLoad;
+                        _epubView.ProgressChanged += OnProgressChanged;
                         _epubView.TouchHolding += (_s, _e) => { TouchHolding?.Invoke(_s, _e); };
                         _epubView.TouchTapped += (_s, _e) => { TouchTapped?.Invoke(_s, _e); };
                     } 
@@ -88,6 +94,35 @@ namespace Richasy.Controls.Reader
                 }
                 _epubView.Init(_epubContent, style as EpubViewStyle);
             }
+            
+        }
+
+        /// <summary>
+        /// 加载阅读历史（需要与当前书籍匹配）
+        /// </summary>
+        /// <param name="history">阅读历史</param>
+        public void LoadHistory(History history)
+        {
+            if (Chapters == null || Chapters.Count == 0 || !Chapters.Any(p => p.Equals(history.Chapter)))
+                throw new ArgumentOutOfRangeException("The chapter list don't have this chapter");
+            if (ReaderType == Enums.ReaderType.Txt)
+            {
+
+            }
+            else
+            {
+
+            }
+        }
+
+        /// <summary>
+        /// 加载章节
+        /// </summary>
+        /// <param name="chapter">章节</param>
+        public void LoadChapter(Chapter chapter)
+        {
+            if (Chapters == null || Chapters.Count == 0 || !Chapters.Any(p => p.Equals(chapter)))
+                throw new ArgumentOutOfRangeException("The chapter list don't have this chapter");
         }
     }
 }
