@@ -29,6 +29,7 @@ namespace Richasy.Controls.Reader.Models
         public List<Block> RenderBlocks { get; private set; }
 
         public EventHandler<LinkEventArgs> LinkTapped;
+        public EventHandler<ImageEventArgs> ImageTapped;
 
         private HtmlDocument HtmlDocument = new HtmlDocument();
         private List<EpubByteFile> Images;
@@ -295,10 +296,10 @@ namespace Richasy.Controls.Reader.Models
         private Inline CreateSuperscript(HtmlNode node)
         {
             var container = new InlineUIContainer();
-            if (node.ChildNodes.Any(p => p.Name.Equals("a", StringComparison.OrdinalIgnoreCase)))
+            if (node.SelectSingleNode("//a")!=null)
             {
-                var children = node.ChildNodes.Where(n => n.Name.Equals("a", StringComparison.OrdinalIgnoreCase)).Select(p => CreateHyperLink(p, true)); ;
-                return children.Where(p => p != null).FirstOrDefault();
+                var hyp = CreateHyperLink(node.SelectSingleNode("//a"));
+                return hyp;
             }
             else
             {
@@ -313,7 +314,7 @@ namespace Richasy.Controls.Reader.Models
             return container;
         }
 
-        private Inline CreateHyperLink(HtmlNode node, bool isInline = false)
+        private Inline CreateHyperLink(HtmlNode node)
         {
             if (string.IsNullOrEmpty(node.InnerText))
                 return null;
@@ -325,23 +326,16 @@ namespace Richasy.Controls.Reader.Models
             args.Id = sp.Last();
             if (link.IndexOf("://") == -1)
                 link = "jump://" + link;
-            var cont = new InlineUIContainer();
-            var btn = new HyperlinkButton();
-            btn.VerticalAlignment = VerticalAlignment.Center;
-            btn.Content = node.InnerText;
-            btn.Foreground = new SolidColorBrush(Style.Foreground);
-            if (isInline)
-                btn.Margin = new Thickness(0, 0, 0, Style.FontSize / -3);
-            btn.Tapped += async (_s, _e) =>
+            var hyp = new Hyperlink();
+            hyp.Inlines.Add(new Run() { Text = node.InnerText });
+            hyp.Click += async (_s, _e) =>
             {
-                _e.Handled = true;
                 if (link.StartsWith("jump://") && !args.Id.Contains("html"))
                     LinkTapped?.Invoke(_s, args);
                 else
                     await Launcher.LaunchUriAsync(new Uri(link));
             };
-            cont.Child = btn;
-            return cont;
+            return hyp;
         }
 
         private Inline CreateBold(HtmlNode node)
@@ -404,7 +398,7 @@ namespace Richasy.Controls.Reader.Models
             image.Tapped += (_s, _e) =>
             {
                 _e.Handled = true;
-                //ImageTapped?.Invoke(_s, new ImageEventArgs(base64));
+                ImageTapped?.Invoke(_s, new ImageEventArgs(base64));
             };
             container.Child = image;
             return container;
@@ -412,23 +406,51 @@ namespace Richasy.Controls.Reader.Models
 
         private Inline CreateHeader(HtmlNode node)
         {
-            double xi = 1;
-            xi += Convert.ToInt32(node.Name.ToLower().Replace("h", "")) / 10.0;
-            return new Run()
+            var container = new InlineUIContainer();
+            var border = new Border();
+            border.BorderBrush = new SolidColorBrush(Style.HeaderLineColor);
+            border.BorderThickness = new Thickness(0, 0, 0, 2);
+            border.Padding = new Thickness(0, 0, 0, Style.FontSize / 2.0);
+            int addon = Convert.ToInt32(node.Name.Replace("h", "", StringComparison.OrdinalIgnoreCase));
+            border.Child = new TextBlock()
             {
-                Text = Environment.NewLine + node.InnerText + Environment.NewLine,
-                FontSize = xi * Style.FontSize,
+                Text = node.InnerText.Trim(),
+                Foreground = new SolidColorBrush(Style.Foreground),
+                FontSize = Style.FontSize + addon,
+                TextWrapping = TextWrapping.Wrap,
+                FontWeight = FontWeights.Bold
             };
+            container.Child = border;
+            return container;
         }
 
         private Inline CreateBlockquote(HtmlNode node)
         {
-            return new Run()
+            //var container = new InlineUIContainer();
+            //var border = new Border();
+            //border.BorderBrush = new SolidColorBrush(Style.BlockquoteBorderColor);
+            //border.BorderThickness = new Thickness(8, 0, 0, 0);
+            //border.Background = new SolidColorBrush(Style.BlockquoteBorderColor) { Opacity = 0.2 };
+            //border.Padding = new Thickness(Style.FontSize / 2.0);
+            //border.Margin = new Thickness(0, Style.FontSize / 2.0, 0, Style.FontSize);
+            //border.Child = new TextBlock()
+            //{
+            //    Text = node.InnerText.Trim(),
+            //    Foreground = new SolidColorBrush(Style.Foreground),
+            //    FontSize = Style.FontSize / 1.1,
+            //    LineHeight = Style.LineHeight / 1.1,
+            //    TextWrapping = TextWrapping.Wrap,
+            //    IsTextSelectionEnabled = true
+            //};
+            //container.Child = border;
+            //return container;
+            return new Run
             {
-                Text = node.InnerText,
-                FontStyle = FontStyle.Italic,
-                FontWeight = FontWeights.Bold
+                Text = node.InnerText.Trim(),
+                FontSize = Style.FontSize / 1.1,
+                FontStyle = FontStyle.Oblique
             };
+            
         }
 
         private void CreateList(HtmlNode node, Block parent, bool isOrder = false)

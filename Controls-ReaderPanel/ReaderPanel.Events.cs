@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 
 namespace Richasy.Controls.Reader
 {
@@ -16,8 +18,9 @@ namespace Richasy.Controls.Reader
         public event EventHandler OpenCompleted;
         public event EventHandler SetContentStarting;
         public event EventHandler SetContentCompleted;
-        public event EventHandler<PositionEventArgs> TouchHolding;
         public event EventHandler<PositionEventArgs> TouchTapped;
+        public event EventHandler<LinkEventArgs> LinkTapped;
+        public event EventHandler<ImageEventArgs> ImageTapped;
 
         public void OnPrevPageSelected(object sender, EventArgs args)
         {
@@ -116,6 +119,19 @@ namespace Richasy.Controls.Reader
                 SetContentCompleted?.Invoke(this, EventArgs.Empty);
             else
                 SetContentStarting?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void OnTouchHolding(object sender, PositionEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(SelectedText))
+            {
+                ReaderFlyout.LightDismissOverlayMode = LightDismissOverlayMode.Off;
+                ReaderFlyout.ShowAt(this, new FlyoutShowOptions
+                {
+                    Position = e.Position,
+                    ShowMode = FlyoutShowMode.Standard
+                });
+            }
         }
     }
 }

@@ -58,5 +58,21 @@ namespace Richasy.Controls.Reader
 
         public string[] ChapterEndKey { get; set; }
         public string[] ChapterExtraKey { get; set; }
+
+        /// <summary>
+        /// 选中文本
+        /// </summary>
+        public string SelectedText
+        {
+            get
+            {
+                if (ReaderType == ReaderType.Txt && _txtView != null)
+                    return _txtView.SelectedText;
+                else if (ReaderType == ReaderType.Epub && _epubView != null)
+                    return _epubView.SelectedText;
+                else
+                    return "";
+            }
+        }
     }
 }

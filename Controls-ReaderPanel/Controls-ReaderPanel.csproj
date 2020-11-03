@@ -158,6 +158,7 @@
     <Compile Include="Models\Helpers\EncodingHelper.cs" />
     <Compile Include="Models\Helpers\HtmlHelper.cs" />
     <Compile Include="Models\History.cs" />
+    <Compile Include="Models\ImageEventArgs.cs" />
     <Compile Include="Models\LinkEventArgs.cs" />
     <Compile Include="Models\PositionEventArgs.cs" />
     <Compile Include="Models\ReaderStyle.cs" />

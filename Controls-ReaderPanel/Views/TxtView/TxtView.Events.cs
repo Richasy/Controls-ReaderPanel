@@ -64,5 +64,7 @@ namespace Richasy.Controls.Reader.Views
                 IsCoreSelectedChanged = false;
             }
         }
+
+        
     }
 }

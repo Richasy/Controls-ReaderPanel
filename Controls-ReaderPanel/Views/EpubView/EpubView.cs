@@ -60,6 +60,8 @@ namespace Richasy.Controls.Reader.Views
         {
             Book = book;
             helper = new HtmlHelper(book.Resources.Images.ToList(), style);
+            helper.LinkTapped += (_s, _e) => { LinkTapped?.Invoke(_s, _e); };
+            helper.ImageTapped += (_s, _e) => { ImageTapped?.Invoke(_s, _e); };
         }
         protected override void OnApplyTemplate()
         {

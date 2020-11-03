@@ -84,7 +84,7 @@ namespace Richasy.Controls.Reader.Views
 
         private void FlyoutInit()
         {
-            _txtBlock.ContextFlyout = ReadFlyout;
+            _txtBlock.ContextFlyout = ReaderFlyout;
             _txtBlock.SelectionFlyout = null;
         }
         #endregion Private Method

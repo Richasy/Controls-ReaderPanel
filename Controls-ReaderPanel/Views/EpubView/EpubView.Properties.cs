@@ -100,23 +100,23 @@ namespace Richasy.Controls.Reader.Views
         public static readonly DependencyProperty ViewStyleProperty =
             DependencyProperty.Register("ViewStyle", typeof(EpubViewStyle), typeof(EpubView), new PropertyMetadata(new EpubViewStyle()));
 
-        public FlyoutBase ReadFlyout
+        public FlyoutBase ReaderFlyout
         {
-            get { return (FlyoutBase)GetValue(ReadFlyoutProperty); }
-            set { SetValue(ReadFlyoutProperty, value); }
+            get { return (FlyoutBase)GetValue(ReaderFlyoutProperty); }
+            set { SetValue(ReaderFlyoutProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for ReadFlyout.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty ReadFlyoutProperty =
-            DependencyProperty.Register("ReadFlyout", typeof(FlyoutBase), typeof(EpubView), new PropertyMetadata(null, new PropertyChangedCallback(ReadFlyout_Changed)));
+        public static readonly DependencyProperty ReaderFlyoutProperty =
+            DependencyProperty.Register("ReaderFlyout", typeof(FlyoutBase), typeof(EpubView), new PropertyMetadata(null, new PropertyChangedCallback(ReaderFlyout_Changed)));
 
-        private static void ReadFlyout_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void ReaderFlyout_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (e.NewValue is FlyoutBase flyout && e.NewValue != null)
             {
                 var sender = d as EpubView;
                 if (sender._epubBlock != null)
-                    sender._epubBlock.SelectionFlyout = flyout;
+                    sender._epubBlock.SelectionFlyout = sender._epubBlock.ContextFlyout = flyout;
             }
         }
     }

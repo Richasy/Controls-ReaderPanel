@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls.Primitives;
 
 namespace Richasy.Controls.Reader
 {
@@ -62,6 +63,28 @@ namespace Richasy.Controls.Reader
                     instance._txtView.SingleColumnMaxWidth = width;
                 else if (instance.ReaderType == Enums.ReaderType.Epub && instance._epubView != null)
                     instance._epubView.SingleColumnMaxWidth = width;
+            }
+        }
+
+        public FlyoutBase ReaderFlyout
+        {
+            get { return (FlyoutBase)GetValue(ReaderFlyoutProperty); }
+            set { SetValue(ReaderFlyoutProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ReaderFlyout.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ReaderFlyoutProperty =
+            DependencyProperty.Register("ReaderFlyout", typeof(FlyoutBase), typeof(ReaderPanel), new PropertyMetadata(null,new PropertyChangedCallback(ReaderFlyout_Changed)));
+
+        private static void ReaderFlyout_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if(e.NewValue is FlyoutBase flyout)
+            {
+                var instance = d as ReaderPanel;
+                if (instance.ReaderType == Enums.ReaderType.Txt && instance._txtView != null)
+                    instance._txtView.ReaderFlyout = flyout;
+                else if (instance.ReaderType == Enums.ReaderType.Epub && instance._epubView != null)
+                    instance._epubView.ReaderFlyout = flyout;
             }
         }
     }

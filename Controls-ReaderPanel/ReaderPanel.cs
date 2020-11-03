@@ -64,11 +64,10 @@ namespace Richasy.Controls.Reader
                         _txtView.NextPageSelected += OnNextPageSelected;
                         _txtView.LoadingChanged += OnLoad;
                         _txtView.ProgressChanged += OnProgressChanged;
-                        _txtView.TouchHolding += (_s, _e) => { TouchHolding?.Invoke(_s, _e); };
+                        _txtView.TouchHolding += OnTouchHolding;
                         _txtView.TouchTapped += (_s, _e) => { TouchTapped?.Invoke(_s, _e); };
-                        _txtView.Loaded += (_s, _e) => { _txtView.SingleColumnMaxWidth = SingleColumnMaxWidth; };
+                        _txtView.Loaded += (_s, _e) => { _txtView.SingleColumnMaxWidth = SingleColumnMaxWidth; _txtView.ReaderFlyout = ReaderFlyout; };
                     }
-                    //_txtView.SingleColumnMaxWidth = SingleColumnMaxWidth;
                     _mainPresenter.Content = _txtView;
                 }
                 _txtContent = await GetTxtContent(bookFile);
@@ -91,9 +90,11 @@ namespace Richasy.Controls.Reader
                         _epubView.NextPageSelected += OnNextPageSelected;
                         _epubView.LoadingChanged += OnLoad;
                         _epubView.ProgressChanged += OnProgressChanged;
-                        _epubView.TouchHolding += (_s, _e) => { TouchHolding?.Invoke(_s, _e); };
+                        _epubView.TouchHolding += OnTouchHolding;
                         _epubView.TouchTapped += (_s, _e) => { TouchTapped?.Invoke(_s, _e); };
-                        _epubView.Loaded += (_s, _e) => { _epubView.SingleColumnMaxWidth = SingleColumnMaxWidth; };
+                        _epubView.Loaded += (_s, _e) => { _epubView.SingleColumnMaxWidth = SingleColumnMaxWidth; _epubView.ReaderFlyout = ReaderFlyout; };
+                        _epubView.LinkTapped += (_s, _e) => { LinkTapped?.Invoke(this, _e); };
+                        _epubView.ImageTapped += (_s, _e) => { ImageTapped?.Invoke(this, _e); };
                     }
                     
                     _mainPresenter.Content = _epubView;

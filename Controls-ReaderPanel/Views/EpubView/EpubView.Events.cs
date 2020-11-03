@@ -18,6 +18,8 @@ namespace Richasy.Controls.Reader.Views
         public event EventHandler<bool> LoadingChanged;
         public event EventHandler<PositionEventArgs> TouchHolding;
         public event EventHandler<PositionEventArgs> TouchTapped;
+        public event EventHandler<LinkEventArgs> LinkTapped;
+        public event EventHandler<ImageEventArgs> ImageTapped;
 
         private void OnPrevPageSelected()
         {

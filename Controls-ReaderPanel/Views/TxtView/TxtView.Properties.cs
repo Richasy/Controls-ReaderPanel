@@ -100,23 +100,23 @@ namespace Richasy.Controls.Reader.Views
         public static readonly DependencyProperty ViewStyleProperty =
             DependencyProperty.Register("ViewStyle", typeof(TxtViewStyle), typeof(TxtView), new PropertyMetadata(new TxtViewStyle()));
 
-        public FlyoutBase ReadFlyout
+        public FlyoutBase ReaderFlyout
         {
-            get { return (FlyoutBase)GetValue(ReadFlyoutProperty); }
-            set { SetValue(ReadFlyoutProperty, value); }
+            get { return (FlyoutBase)GetValue(ReaderFlyoutProperty); }
+            set { SetValue(ReaderFlyoutProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for ReadFlyout.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty ReadFlyoutProperty =
-            DependencyProperty.Register("ReadFlyout", typeof(FlyoutBase), typeof(TxtView), new PropertyMetadata(null, new PropertyChangedCallback(ReadFlyout_Changed)));
+        public static readonly DependencyProperty ReaderFlyoutProperty =
+            DependencyProperty.Register("ReaderFlyout", typeof(FlyoutBase), typeof(TxtView), new PropertyMetadata(null, new PropertyChangedCallback(ReaderFlyout_Changed)));
 
-        private static void ReadFlyout_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void ReaderFlyout_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (e.NewValue is FlyoutBase flyout && e.NewValue != null)
             {
                 var sender = d as TxtView;
                 if (sender._txtBlock != null)
-                    sender._txtBlock.SelectionFlyout = flyout;
+                    sender._txtBlock.SelectionFlyout = sender._txtBlock.ContextFlyout = flyout;
             }
         }
     }

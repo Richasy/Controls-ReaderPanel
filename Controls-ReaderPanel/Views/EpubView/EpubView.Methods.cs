@@ -84,7 +84,7 @@ namespace Richasy.Controls.Reader.Views
 
         private void FlyoutInit()
         {
-            _epubBlock.ContextFlyout = ReadFlyout;
+            _epubBlock.ContextFlyout = ReaderFlyout;
             _epubBlock.SelectionFlyout = null;
         }
         #endregion Private Method
