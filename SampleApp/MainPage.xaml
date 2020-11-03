@@ -4,34 +4,50 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:SampleApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:reader="using:Richasy.Controls.Reader" xmlns:views="using:Richasy.Controls.Reader.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:reader="using:Richasy.Controls.Reader" xmlns:views="using:Richasy.Controls.Reader.Views" xmlns:models="using:Richasy.Controls.Reader.Models"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
+    <Page.Resources>
+        <local:LevelMarginCovnerter x:Key="LevelMarginConverter"/>
+        <DataTemplate x:DataType="models:Chapter" x:Key="ChapterItemTemplate">
+            <Grid Padding="10,5">
+                <TextBlock Text="{x:Bind Title}" MaxWidth="200" TextTrimming="CharacterEllipsis"
+                           HorizontalAlignment="Left" ToolTipService.ToolTip="{x:Bind Title}"
+                           Margin="{x:Bind Level,Converter={StaticResource LevelMarginConverter}}"/>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
     <Grid>
-        <reader:ReaderPanel>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <ListView x:Name="ChapterListView"
+                  IsItemClickEnabled="True"
+                  ItemTemplate="{StaticResource ChapterItemTemplate}"
+                  ItemClick="ChapterListView_ItemClick"
+                  ItemsSource="{x:Bind ChapterCollection}"
+                  Background="{ThemeResource SystemControlAcrylicWindowBrush}"
+                  />
+        <reader:ReaderPanel x:Name="Reader" ChapterLoaded="Reader_ChapterLoaded"
+                            OpenStarting="Reader_OpenStarting"
+                            OpenCompleted="Reader_OpenCompleted"
+                            ProgressChanged="Reader_ProgressChanged"
+                            SingleColumnMaxWidth="1000"
+                            Loaded="Reader_Loaded" Grid.Column="1">
             <reader:ReaderPanel.Header>
-                <TextBlock Text="Header"/>
+                <TextBlock Style="{StaticResource BaseTextBlockStyle}"
+                           x:Name="ChapterTitleBlock" HorizontalAlignment="Center"
+                           Margin="0,10"/>
             </reader:ReaderPanel.Header>
-            <reader:ReaderPanel.Content>
-                <!--<views:TxtView x:Name="View" Loaded="View_Loaded">
-                    <views:TxtView.ReadFlyout>
-                        <MenuFlyout>
-                            <MenuFlyoutItem Icon="Add" Text="测试"/>
-                        </MenuFlyout>
-                    </views:TxtView.ReadFlyout>
-                </views:TxtView>-->
-                <views:EpubView x:Name="View" Loaded="View_Loaded_1">
-                    <views:EpubView.ReadFlyout>
-                        <MenuFlyout>
-                            <MenuFlyoutItem Icon="Add" Text="测试"/>
-                        </MenuFlyout>
-                    </views:EpubView.ReadFlyout>
-                </views:EpubView>
-            </reader:ReaderPanel.Content>
+            
             <reader:ReaderPanel.Footer>
-                <TextBox Text="Footer"/>
+                <TextBlock x:Name="ProgressBlock" Style="{StaticResource BaseTextBlockStyle}"
+                           HorizontalAlignment="Center" Margin="0,10"/>
             </reader:ReaderPanel.Footer>
         </reader:ReaderPanel>
+        <ProgressRing VerticalAlignment="Center" HorizontalAlignment="Center"
+                      Width="40" Height="40" Name="LoadingRing" Grid.Column="1"
+                      />
     </Grid>
 </Page>

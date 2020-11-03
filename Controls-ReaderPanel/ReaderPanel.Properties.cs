@@ -40,6 +40,29 @@ namespace Richasy.Controls.Reader
         public static readonly DependencyProperty ContentProperty =
             DependencyProperty.Register("Content", typeof(object), typeof(ReaderPanel), new PropertyMetadata(null));
 
+        public double SingleColumnMaxWidth
+        {
+            get { return (double)GetValue(SingleColumnMaxWidthProperty); }
+            set { SetValue(SingleColumnMaxWidthProperty, value); }
+        }
 
+        // Using a DependencyProperty as the backing store for SingleColumnMaxWidth.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SingleColumnMaxWidthProperty =
+            DependencyProperty.Register("SingleColumnMaxWidth", typeof(double), typeof(ReaderPanel), new PropertyMetadata(800.0, new PropertyChangedCallback(SingleColumnMaxWidth_Changed)));
+
+        private static void SingleColumnMaxWidth_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            double width = (double)e.NewValue;
+            var instance = d as ReaderPanel;
+            if (width <= 100)
+                instance.SingleColumnMaxWidth = (double)e.OldValue;
+            else
+            {
+                if (instance.ReaderType == Enums.ReaderType.Txt && instance._txtView != null)
+                    instance._txtView.SingleColumnMaxWidth = width;
+                else if (instance.ReaderType == Enums.ReaderType.Epub && instance._epubView != null)
+                    instance._epubView.SingleColumnMaxWidth = width;
+            }
+        }
     }
 }

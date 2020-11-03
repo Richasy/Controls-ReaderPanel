@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -41,20 +42,22 @@ namespace Richasy.Controls.Reader
                         }
                     }
                 }
-                int index = 0;
-                for (int i = 0; i < title.Length; i++)
-                {
-                    if (ChapterEndKey.Any(p => p == title[i].ToString()))
-                    {
-                        index = i;
-                        break;
-                    }
-                }
-                string chapter = title.Substring(temp_index, index - 1).Trim();
-                if (!numberRegex.IsMatch(chapter))
-                {
-                    result = false;
-                }
+                //int index = 0;
+                //for (int i = 0; i < title.Length; i++)
+                //{
+                //    if (ChapterEndKey.Any(p => p == title[i].ToString()))
+                //    {
+                //        index = i;
+                //        break;
+                //    }
+                //}
+                //if (index <= temp_index)
+                //    index = line.Length;
+                //string chapter = title.Substring(temp_index, index - 1).Trim();
+                //if (!numberRegex.IsMatch(chapter))
+                //{
+                //    result = false;
+                //}
             }
             return result;
         }
@@ -73,6 +76,26 @@ namespace Richasy.Controls.Reader
             }
             return false;
         }
+
+        private Chapter GetLastEpubChapter(EpubTextFile chapter)
+        {
+            var orders = _epubContent.SpecialResources.HtmlInReadingOrder;
+            Chapter lastChapter = null;
+            foreach (var header in Chapters)
+            {
+                var corr = orders.Where(p => p.AbsolutePath == header.Link).FirstOrDefault();
+                if(corr!=null)
+                {
+                    int index = orders.IndexOf(corr);
+                    int currentIndex = orders.IndexOf(chapter);
+                    if (currentIndex >= index)
+                        lastChapter = header;
+                    else
+                        break;
+                }
+            }
+            return lastChapter;
+        }
         #endregion
 
         #region Chapter Methods
@@ -87,67 +110,54 @@ namespace Richasy.Controls.Reader
                 throw new ArgumentNullException();
             int count = 0;
             List<Chapter> chapters = new List<Chapter>();
-
-            using (var bookStream = await book.OpenStreamForReadAsync())
+            var total = await GetTxtContent(book);
+            int number = 1;
+            Chapter chapter = new Chapter();
+            chapter.Title = book.DisplayName.Replace(".txt", "", StringComparison.OrdinalIgnoreCase);
+            chapter.Index = 0;
+            chapter.StartLength = 0;
+            chapters.Add(chapter);
+            StringBuilder builder = new StringBuilder();
+            int parseLength = 0;
+            foreach (var line in total.Split(Environment.NewLine))
             {
-                var encoding = EncodingHelper.DetectFileEncoding(bookStream, Encoding.ASCII);
-                bookStream.Seek(0, SeekOrigin.Begin);
-                using (var reader = new StreamReader(bookStream, encoding))
+                if (string.IsNullOrEmpty(line.Trim()))
                 {
-
-                    string line;
-                    //之所以设置这个变量是因为有的TXT文档会在一章的开头将标题重复一遍，造成一章内容被解析成两章
-                    //所以设置一个最小行数，两个章节之间的行数差距最小为5
-                    int number = 1;
-                    Chapter chapter = new Chapter();
-                    chapter.Title = book.DisplayName;
-                    chapter.Index = 0;
-                    chapter.StartLength = 0;
-                    chapters.Add(chapter);
-
-                    StringBuilder builder = new StringBuilder();
-                    int parseLength = 0;
-                    while ((line = await reader.ReadLineAsync()) != null)
+                    parseLength += line.Length + Environment.NewLine.Length;
+                    continue;
+                }
+                if (number >= 1)
+                {
+                    string title = "";
+                    if (IsExtra(line))
+                        title = line;
+                    else if (IsTitle(line))
+                        title = ChapterDivisionRegex.Match(line).Value;
+                    if (!string.IsNullOrEmpty(title))
                     {
-                        if (string.IsNullOrEmpty(line.Trim()))
-                        {
-                            parseLength += line.Length + Environment.NewLine.Length;//这里的+2是因为要加上换行的长度
-                            continue;
-                        }
-                        if (number >= 1)
-                        {
-                            string title = "";
-                            if (IsExtra(line))
-                                title = line;
-                            else if (IsTitle(line))
-                                title = ChapterDivisionRegex.Match(line).Value;
-                            if (!string.IsNullOrEmpty(title))
-                            {
-                                count++;
-                                parseLength += builder.ToString().ToCharArray().Length;
-                                builder.Remove(0, builder.Length);
-                                chapter = new Chapter(count, title, parseLength);
-                                chapters.Add(chapter);
-                                number = 0;
-                            }
-                        }
-
-                        builder.Append(line);
-                        parseLength += Environment.NewLine.Length;
-                        number++;
-                        if (number >= MAX_TXT_PARSE_LINES)
-                        {
-                            //为了避免某个文档一直没有匹配到新章节而不停的向StringBuilder中添加内容,导致内存溢出，这里对StringBuilder的大小进行了一定的限制
-                            //即解析的行数达到一定的数目之后，即使没有匹配到新章节也将StringBuilder清空，同时更新parseLength。
-                            //注意：这个数目的设定会影响到解析的时间，请谨慎设置!!!!
-                            parseLength += builder.ToString().ToCharArray().Length;
-                            builder.Remove(0, builder.Length);
-                            number = 1;
-                        }
+                        count++;
+                        parseLength += builder.ToString().Length;
+                        builder.Clear();
+                        chapter = new Chapter(count, title, parseLength);
+                        chapters.Add(chapter);
+                        number = 0;
                     }
                 }
-            }
 
+                builder.Append(line);
+                parseLength += Environment.NewLine.Length;
+                number++;
+                if (number >= MAX_TXT_PARSE_LINES)
+                {
+                    //为了避免某个文档一直没有匹配到新章节而不停的向StringBuilder中添加内容,导致内存溢出，这里对StringBuilder的大小进行了一定的限制
+                    //即解析的行数达到一定的数目之后，即使没有匹配到新章节也将StringBuilder清空，同时更新parseLength。
+                    //注意：这个数目的设定会影响到解析的时间，请谨慎设置!!!!
+                    parseLength += builder.ToString().Length;
+                    builder.Clear();
+                    number = 1;
+                }
+            }
+            
             return chapters;
         }
 
@@ -163,6 +173,12 @@ namespace Richasy.Controls.Reader
             var headers = book.TableOfContents;
             var chapters = new List<Chapter>();
             AddEpubChapter(headers, chapters, new HtmlDocument());
+            int index = 0;
+            foreach (var chapter in chapters)
+            {
+                chapter.Index = index;
+                index++;
+            }
             return chapters;
 
             void AddEpubChapter(IList<EpubChapter> headerList, List<Chapter> titles, HtmlDocument document, int level = 1)
@@ -207,7 +223,7 @@ namespace Richasy.Controls.Reader
         private async Task<string> GetTxtContent(StorageFile book)
         {
             string bookContent = "";
-            using (var stream=await book.OpenStreamForReadAsync())
+            using (var stream = await book.OpenStreamForReadAsync())
             {
                 var encoding = EncodingHelper.DetectFileEncoding(stream, Encoding.UTF8);
                 stream.Seek(0, SeekOrigin.Begin);
@@ -218,6 +234,37 @@ namespace Richasy.Controls.Reader
                 bookContent = bookContent.Replace("\n", Environment.NewLine);
             }
             return bookContent;
+        }
+
+        private void SetProgress(Chapter chapter, int addonLength = 0)
+        {
+            if (Chapters == null || Chapters.Count == 0 || !Chapters.Any(p => p.Equals(chapter)))
+                throw new ArgumentOutOfRangeException("The chapter list don't have this chapter");
+            CurrentChapter = Chapters.Where(p => p.Equals(chapter)).FirstOrDefault();
+            if (ReaderType == Enums.ReaderType.Txt)
+            {
+                int nextIndex = CurrentChapter.Index + 1;
+                string content = "";
+                if (nextIndex >= Chapters.Count)
+                    content = _txtContent.Substring(CurrentChapter.StartLength);
+                else
+                    content = _txtContent.Substring(CurrentChapter.StartLength, Chapters[nextIndex].StartLength - CurrentChapter.StartLength);
+                _txtView.SetContent(content, Enums.ReaderStartMode.First, addonLength);
+            }
+            else
+            {
+                var info = _epubContent.SpecialResources.HtmlInReadingOrder.Where(p=>p.AbsolutePath.Equals(chapter.Link,StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                string content = string.Empty;
+                if (info != null)
+                {
+                    content = info.TextContent;
+                    _tempEpubChapterIndex = _epubContent.SpecialResources.HtmlInReadingOrder.IndexOf(info);
+                }
+                else
+                    content = chapter.Title;
+                _epubView.SetContent(content, Enums.ReaderStartMode.First, addonLength);
+            }
+            RaiseProgressChanged(addonLength);
         }
         #endregion
     }

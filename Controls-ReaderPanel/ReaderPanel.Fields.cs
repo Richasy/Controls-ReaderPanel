@@ -36,6 +36,8 @@ namespace Richasy.Controls.Reader
 
         private bool _isLoading = false;
 
+        private int _tempEpubChapterIndex = 0;
+
         /// <summary>
         /// 章节划分正则表达式
         /// </summary>

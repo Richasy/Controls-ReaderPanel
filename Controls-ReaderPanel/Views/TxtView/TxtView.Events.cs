@@ -41,7 +41,6 @@ namespace Richasy.Controls.Reader.Views
 
         public void SizeChangeHandle()
         {
-            Debug.WriteLine(ParentWidth);
             _columns = Convert.ToInt32(Math.Ceiling(ParentWidth / SingleColumnMaxWidth));
             CreateContentDelayer.Delay();
         }

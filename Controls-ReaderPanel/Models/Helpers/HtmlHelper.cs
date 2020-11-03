@@ -97,6 +97,7 @@ namespace Richasy.Controls.Reader.Models
                         else
                         {
                             var p = parent as Paragraph;
+                            p.TextIndent = Style.TextIndent * Style.FontSize;
                             p.Inlines.Add(new Run() { Text = text });
                         }
                     }
@@ -147,14 +148,17 @@ namespace Richasy.Controls.Reader.Models
             {
                 case "#text":
                     if (!string.IsNullOrEmpty(node.InnerText.Trim()))
+                    {
+                        p.TextIndent = Style.TextIndent * Style.FontSize;
                         p.Inlines.Add(new Run() { Text = node.GetDirectInnerText().Trim() });
+                    }
                     break;
                 case "hr":
                     p.Inlines.Add(CreateLineThrough());
                     break;
                 case "img":
                 case "image":
-                    var image = await CreateImageAsync(node, p.Inlines.Count == 0);
+                    var image = await CreateImageAsync(node, p.Inlines.Count != 0);
                     if (image != null)
                         p.Inlines.Add(image);
                     break;
@@ -412,8 +416,8 @@ namespace Richasy.Controls.Reader.Models
             xi += Convert.ToInt32(node.Name.ToLower().Replace("h", "")) / 10.0;
             return new Run()
             {
-                Text = node.InnerText,
-                FontSize = xi * Style.FontSize
+                Text = Environment.NewLine + node.InnerText + Environment.NewLine,
+                FontSize = xi * Style.FontSize,
             };
         }
 

@@ -183,8 +183,12 @@ namespace Richasy.Controls.Reader.Views
                     rtb.Foreground = new SolidColorBrush(style.Foreground);
                     rtb.LineHeight = style.LineHeight;
                     rtb.Margin = style.Padding;
-                    var title = rtb.Blocks.First();
-                    title.FontSize = style.HeaderFontSize;
+                    var title = rtb.Blocks.FirstOrDefault();
+                    if (title != null)
+                    {
+                        title.FontSize = style.HeaderFontSize;
+                        title.Margin = style.HeaderMargin;
+                    }   
                 }
                 else if (item is RichTextBlockOverflow of)
                 {
@@ -201,9 +205,9 @@ namespace Richasy.Controls.Reader.Views
             title.Inlines.Add(new Run()
             {
                 Text = firstLine.Trim(),
-                FontWeight = FontWeights.Bold
+                FontWeight = FontWeights.Bold,
             });
-            var paragraphs = content.Replace("\r", string.Empty).Split('\n').Select(x =>
+            var paragraphs = content.Split(Environment.NewLine).Select(x =>
             {
                 if (x.Trim() != firstLine.Trim())
                 {

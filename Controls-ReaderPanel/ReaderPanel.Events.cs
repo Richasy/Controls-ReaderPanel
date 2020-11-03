@@ -14,6 +14,8 @@ namespace Richasy.Controls.Reader
         public event EventHandler<List<Chapter>> ChapterLoaded;
         public event EventHandler OpenStarting;
         public event EventHandler OpenCompleted;
+        public event EventHandler SetContentStarting;
+        public event EventHandler SetContentCompleted;
         public event EventHandler<PositionEventArgs> TouchHolding;
         public event EventHandler<PositionEventArgs> TouchTapped;
 
@@ -34,12 +36,21 @@ namespace Richasy.Controls.Reader
             }
             else
             {
-                var prevOrder = _epubContent.SpecialResources.HtmlInReadingOrder[prev.Index];
-                string content = prevOrder.TextContent;
+                var orders = _epubContent.SpecialResources.HtmlInReadingOrder;
+                if (_tempEpubChapterIndex < 1)
+                    return;
+                _tempEpubChapterIndex -= 1;
+                var prevOrder = orders[_tempEpubChapterIndex];
+                prev = GetLastEpubChapter(prevOrder);
+                string content = prevOrder?.TextContent ?? prev.Title;
                 _epubView.SetContent(content, Enums.ReaderStartMode.Last);
             }
-            CurrentChapter = prev;
-            ChapterChanged?.Invoke(this, prev);
+
+            if (!prev.Equals(CurrentChapter))
+            {
+                CurrentChapter = prev;
+                ChapterChanged?.Invoke(this, prev);
+            }   
         }
 
         public void OnNextPageSelected(object sender, EventArgs args)
@@ -59,33 +70,42 @@ namespace Richasy.Controls.Reader
                     content = _txtContent.Substring(next.StartLength);
                 else
                     content = _txtContent.Substring(next.StartLength, Chapters[next.Index + 1].StartLength - next.StartLength);
-                _txtView.SetContent(content, Enums.ReaderStartMode.Last);
+                _txtView.SetContent(content, Enums.ReaderStartMode.First);
             }
             else
             {
-                var nextOrder = _epubContent.SpecialResources.HtmlInReadingOrder[next.Index];
-                string content = nextOrder.TextContent;
-                _epubView.SetContent(content, Enums.ReaderStartMode.Last);
+                var orders = _epubContent.SpecialResources.HtmlInReadingOrder;
+                if (_tempEpubChapterIndex > orders.Count - 2)
+                    return;
+                _tempEpubChapterIndex += 1;
+                var nextOrder = orders[_tempEpubChapterIndex];
+                next = GetLastEpubChapter(nextOrder);
+                string content = nextOrder?.TextContent ?? next.Title;
+                _epubView.SetContent(content, Enums.ReaderStartMode.First);
             }
-            CurrentChapter = next;
-            ChapterChanged?.Invoke(this, next);
+            
+            if (!next.Equals(CurrentChapter))
+            {
+                CurrentChapter = next;
+                ChapterChanged?.Invoke(this, next);
+            }
         }
 
         public void OnProgressChanged(object sender, int addonLength)
+        {
+            RaiseProgressChanged(addonLength);
+        }
+
+        private void RaiseProgressChanged(int addonLength)
         {
             if (Chapters.Count == 0)
                 return;
 
             double progress = 0;
-            if (CurrentChapter.Index == Chapters.Count - 1)
-                progress = 100.0;
+            if (ReaderType == Enums.ReaderType.Epub)
+                progress = (CurrentChapter.Index / Chapters.Count * 1.0) * 100.0;
             else
-            {
-                if (ReaderType == Enums.ReaderType.Epub)
-                    progress = (CurrentChapter.Index / Chapters.Count * 1.0) * 100.0;
-                else
-                    progress = ((CurrentChapter.StartLength + addonLength) / _txtContent.Length * 1.0) * 100;
-            }
+                progress = ((CurrentChapter.StartLength + addonLength) * 1.0 / _txtContent.Length * 1.0) * 100;
             var history = new History(CurrentChapter, addonLength, progress);
             ProgressChanged?.Invoke(this, history);
         }
@@ -93,7 +113,9 @@ namespace Richasy.Controls.Reader
         public void OnLoad(object sender, bool e)
         {
             if (e)
-                OpenCompleted?.Invoke(this, EventArgs.Empty);
+                SetContentCompleted?.Invoke(this, EventArgs.Empty);
+            else
+                SetContentStarting?.Invoke(this, EventArgs.Empty);
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
@@ -29,6 +30,7 @@ namespace SampleApp
         public App()
         {
             this.InitializeComponent();
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             this.Suspending += OnSuspending;
         }
 

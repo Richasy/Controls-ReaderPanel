@@ -43,7 +43,7 @@ namespace Richasy.Controls.Reader
                 throw new ArgumentNullException();
 
             string extension = Path.GetExtension(bookFile.Path).ToLower();
-            if(extension!=".epub" && extension != ".txt")
+            if (extension != ".epub" && extension != ".txt")
             {
                 throw new NotSupportedException("File type not support (Currently only support txt and epub file)");
             }
@@ -54,7 +54,8 @@ namespace Richasy.Controls.Reader
                     throw new ArgumentException("Open txt file need TxtViewStyle argument");
                 ReaderType = Enums.ReaderType.Txt;
                 Chapters = await GetTxtChapters(bookFile);
-                if(_mainPresenter.Content==null || !(_mainPresenter.Content is TxtView))
+                ChapterLoaded?.Invoke(this, Chapters);
+                if (_mainPresenter.Content == null || !(_mainPresenter.Content is TxtView))
                 {
                     if (_txtView == null)
                     {
@@ -65,7 +66,9 @@ namespace Richasy.Controls.Reader
                         _txtView.ProgressChanged += OnProgressChanged;
                         _txtView.TouchHolding += (_s, _e) => { TouchHolding?.Invoke(_s, _e); };
                         _txtView.TouchTapped += (_s, _e) => { TouchTapped?.Invoke(_s, _e); };
+                        _txtView.Loaded += (_s, _e) => { _txtView.SingleColumnMaxWidth = SingleColumnMaxWidth; };
                     }
+                    //_txtView.SingleColumnMaxWidth = SingleColumnMaxWidth;
                     _mainPresenter.Content = _txtView;
                 }
                 _txtContent = await GetTxtContent(bookFile);
@@ -74,10 +77,11 @@ namespace Richasy.Controls.Reader
             else
             {
                 if (!(style is EpubViewStyle))
-                    throw new ArgumentException("Open txt file need TxtViewStyle argument");
+                    throw new ArgumentException("Open epub file need EpubViewStyle argument");
                 ReaderType = Enums.ReaderType.Epub;
                 _epubContent = await EpubReader.Read(bookFile, Encoding.Default);
                 Chapters = GetEpubChapters(_epubContent);
+                ChapterLoaded?.Invoke(this, Chapters);
                 if (_mainPresenter.Content == null || !(_mainPresenter.Content is EpubView))
                 {
                     if (_epubView == null)
@@ -89,12 +93,14 @@ namespace Richasy.Controls.Reader
                         _epubView.ProgressChanged += OnProgressChanged;
                         _epubView.TouchHolding += (_s, _e) => { TouchHolding?.Invoke(_s, _e); };
                         _epubView.TouchTapped += (_s, _e) => { TouchTapped?.Invoke(_s, _e); };
-                    } 
+                        _epubView.Loaded += (_s, _e) => { _epubView.SingleColumnMaxWidth = SingleColumnMaxWidth; };
+                    }
+                    
                     _mainPresenter.Content = _epubView;
                 }
                 _epubView.Init(_epubContent, style as EpubViewStyle);
             }
-            
+            OpenCompleted?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -103,26 +109,16 @@ namespace Richasy.Controls.Reader
         /// <param name="history">阅读历史</param>
         public void LoadHistory(History history)
         {
-            if (Chapters == null || Chapters.Count == 0 || !Chapters.Any(p => p.Equals(history.Chapter)))
-                throw new ArgumentOutOfRangeException("The chapter list don't have this chapter");
-            if (ReaderType == Enums.ReaderType.Txt)
-            {
-
-            }
-            else
-            {
-
-            }
+            SetProgress(history.Chapter, history.Start - history.Chapter.StartLength);
         }
 
         /// <summary>
-        /// 加载章节
+        /// 加载章节（需要与当前书籍匹配）
         /// </summary>
         /// <param name="chapter">章节</param>
         public void LoadChapter(Chapter chapter)
         {
-            if (Chapters == null || Chapters.Count == 0 || !Chapters.Any(p => p.Equals(chapter)))
-                throw new ArgumentOutOfRangeException("The chapter list don't have this chapter");
+            SetProgress(chapter, 0);
         }
     }
 }

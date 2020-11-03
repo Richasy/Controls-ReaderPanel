@@ -22,7 +22,7 @@ namespace Richasy.Controls.Reader.Models
             Foreground = Colors.Black;
             Background = Colors.White;
             LineHeight = 30;
-            Padding = new Thickness(50, 20, 50, 20);
+            Padding = new Thickness(40, 20, 40, 20);
             IsAcrylicBackground = false;
         }
 
