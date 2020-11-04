@@ -1,146 +1,70 @@
-﻿using Richasy.Controls.Reader.Enums;
-using Richasy.Controls.Reader.Models;
+﻿using Richasy.Controls.Reader.Models;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
-using Windows.UI.Composition.Interactions;
-using Windows.UI.Input;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Documents;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
 namespace Richasy.Controls.Reader.Views
 {
     [TemplatePart(Name = "TxtGrid", Type = typeof(Grid))]
     [TemplatePart(Name = "TxtBlock", Type = typeof(RichTextBlock))]
-    public partial class TxtView : Control, IInteractionTrackerOwner
+    public partial class TxtView : ReaderViewBase
     {
-        public TxtView()
+        public TxtView():base()
         {
             this.DefaultStyleKey = typeof(TxtView);
-
-            _gestureRecognizer = new GestureRecognizer();
-            _gestureRecognizer.GestureSettings = GestureSettings.ManipulationTranslateX;
-            _gestureRecognizer.ManipulationStarted += _gestureRecognizer_ManipulationStarted;
-            _gestureRecognizer.ManipulationUpdated += _gestureRecognizer_ManipulationUpdated;
-            _gestureRecognizer.ManipulationCompleted += _gestureRecognizer_ManipulationCompleted;
-
-            PointerWheelChangedEventHandler = new PointerEventHandler(_PointerWheelChanged);
-            PointerPressedEventHandler = new PointerEventHandler(_PointerPressed);
-            PointerMovedEventHandler = new PointerEventHandler(_PointerMoved);
-            PointerReleasedEventHandler = new PointerEventHandler(_PointerReleased);
-            PointerCanceledEventHandler = new PointerEventHandler(_PointerCanceled);
-            TouchTappedEventHandler = new TappedEventHandler(_TouchTapped);
-            TouchHoldingEventHandler = new HoldingEventHandler(_TouchHolding);
-
-            this.AddHandler(UIElement.PointerWheelChangedEvent, PointerWheelChangedEventHandler, true);
-            this.AddHandler(UIElement.PointerPressedEvent, PointerPressedEventHandler, true);
-            this.AddHandler(UIElement.PointerMovedEvent, PointerMovedEventHandler, true);
-            this.AddHandler(UIElement.PointerReleasedEvent, PointerReleasedEventHandler, true);
-            this.AddHandler(UIElement.PointerCanceledEvent, PointerCanceledEventHandler, true);
-            this.AddHandler(UIElement.TappedEvent, TouchTappedEventHandler, true);
-            this.AddHandler(UIElement.HoldingEvent, TouchHoldingEventHandler, true);
-            this.SizeChanged += TxtView_SizeChanged;
-
-
-            IndexWaiter = new EventWaiter();
-            CreateContentDelayer = new EventDelayer();
-            CreateContentDelayer.ResetWhenDelayed = true;
-            CreateContentDelayer.Arrived += CreateContentWaiter_Arrived;
         }
 
         protected override void OnApplyTemplate()
         {
-            _txtBlock = GetTemplateChild("TxtBlock") as RichTextBlock;
-            _txtGrid = GetTemplateChild("TxtGrid") as Grid;
-
-            FlyoutInit();
-
-            SetupComposition();
-            SetupTracker();
+            _displayBlock = GetTemplateChild("TxtBlock") as RichTextBlock;
+            _displayContainer = GetTemplateChild("TxtGrid") as Grid;
 
             base.OnApplyTemplate();
         }
 
-        public void SetContent(string Content, ReaderStartMode mode = ReaderStartMode.First, int startLength = 0)
-        {
-            _isSizeChangeLoaded = false;
-            _content = Content;
-            LoadingChanged?.Invoke(this, true);
-            CreateContent();
-
-            _startTextIndex = startLength;
-            IsCoreSelectedChanged = true;
-            var index = 0;
-            switch (mode)
-            {
-                case ReaderStartMode.First:
-                    index = 0;
-                    break;
-                case ReaderStartMode.Last:
-                    index = Count - 1;
-                    break;
-                case ReaderStartMode.Stay:
-                    index = Index > Count - 1 ? Count - 1 : Index;
-                    break;
-            }
-            if (startLength != 0)
-            {
-                int childrenCount = _txtGrid.Children.Count;
-                var signNumber = Content.Length / childrenCount;
-                index = Convert.ToInt32(Math.Floor(startLength / (signNumber * 1.0)));
-                index = Convert.ToInt32(Math.Round(index / (_columns * 1.0)));
-                index = index > Count - 1 ? Count - 1 : index;
-            }
-            Index = index;
-            GoToIndex(Index, false);
-            IsCoreSelectedChanged = false;
-            LoadingChanged?.Invoke(this, false);
-        }
-
-        private void CreateContent()
+        protected override async Task CreateContent()
         {
             int count = 0;
-            _txtGrid.ColumnDefinitions.Clear();
-            if (_txtGrid.Children.Count > 1)
+            _displayContainer.ColumnDefinitions.Clear();
+            if (_displayContainer.Children.Count > 1)
             {
-                for (int i = _txtGrid.Children.Count - 1; i > 0; i--)
+                for (int i = _displayContainer.Children.Count - 1; i > 0; i--)
                 {
-                    _txtGrid.Children.RemoveAt(i);
+                    _displayContainer.Children.RemoveAt(i);
                 }
             }
-            _txtBlock.Blocks.Clear();
+            _displayBlock.Blocks.Clear();
 
             double singleWidth = ParentWidth / _columns;
-            double singleHeight = _txtGrid.ActualHeight;
+            double singleHeight = _displayContainer.ActualHeight;
             double actualWidth = singleWidth - ViewStyle.Padding.Left - ViewStyle.Padding.Right;
             double actualHeight = singleHeight - ViewStyle.Padding.Top - ViewStyle.Padding.Bottom;
-            _txtGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(singleWidth) });
+            _displayContainer.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(singleWidth) });
 
-            RenderContent(_content);
+            await RenderContent(_content);
             count++;
 
-            _txtBlock.Width = actualWidth;
-            _txtBlock.Height = actualHeight;
-            _txtBlock.Measure(new Size(_txtGrid.ActualWidth, _txtGrid.ActualHeight));
+            _displayBlock.Width = actualWidth;
+            _displayBlock.Height = actualHeight;
+            _displayBlock.Measure(new Size(_displayContainer.ActualWidth, _displayContainer.ActualHeight));
 
-            FrameworkElement renderTarget = _txtBlock;
-            bool hasOverflow = _txtBlock.HasOverflowContent;
+            FrameworkElement renderTarget = _displayBlock;
+            bool hasOverflow = _displayBlock.HasOverflowContent;
 
             while (hasOverflow)
             {
                 var tmp = RenderOverflow(renderTarget);
                 tmp.Width = actualWidth;
-                _txtGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(singleWidth) });
+                _displayContainer.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(singleWidth) });
                 count++;
-                _txtGrid.Children.Add(tmp);
-                Grid.SetColumn(tmp, _txtGrid.ColumnDefinitions.Count - 1);
+                _displayContainer.Children.Add(tmp);
+                Grid.SetColumn(tmp, _displayContainer.ColumnDefinitions.Count - 1);
 
                 tmp.Height = actualHeight;
                 tmp.Measure(new Size(singleWidth, singleHeight));
@@ -152,12 +76,11 @@ namespace Richasy.Controls.Reader.Views
             UpdateStyle();
         }
 
-        public void UpdateStyle(TxtViewStyle style = null)
+        protected override void UpdateStyle(ReaderStyle inputStyle = null)
         {
-            if (style != null)
-                ViewStyle = style;
-            else
-                style = ViewStyle;
+            if (inputStyle != null)
+                ViewStyle = inputStyle;
+            var style = ViewStyle as TxtViewStyle;
             if (style.IsAcrylicBackground)
             {
                 var opacity = Convert.ToInt32(style.Background.A) / 255.0;
@@ -174,7 +97,7 @@ namespace Richasy.Controls.Reader.Views
             }
             else
                 Background = new SolidColorBrush(style.Background);
-            foreach (var item in _txtGrid.Children)
+            foreach (var item in _displayContainer.Children)
             {
                 if (item is RichTextBlock rtb)
                 {
@@ -197,7 +120,7 @@ namespace Richasy.Controls.Reader.Views
             }
         }
 
-        private void RenderContent(string content)
+        protected override async Task RenderContent(string content)
         {
             if (string.IsNullOrEmpty(content)) return;
             var firstLine = content.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).First();
@@ -220,24 +143,12 @@ namespace Richasy.Controls.Reader.Views
                 }
                 return null;
             });
-            _txtBlock.Blocks.Add(title);
+            _displayBlock.Blocks.Add(title);
             foreach (var paragraph in paragraphs)
             {
                 if (paragraph != null)
-                    _txtBlock.Blocks.Add(paragraph);
+                    _displayBlock.Blocks.Add(paragraph);
             }
-        }
-
-        private RichTextBlockOverflow RenderOverflow(FrameworkElement target)
-        {
-            var tmp = new RichTextBlockOverflow();
-            if (target is RichTextBlock richBlock)
-                richBlock.OverflowContentTarget = tmp;
-            else if (target is RichTextBlockOverflow of)
-                of.OverflowContentTarget = tmp;
-
-            tmp.Padding = Padding;
-            return tmp;
         }
     }
 }

@@ -2,14 +2,11 @@
 using Richasy.Controls.Reader.Models;
 using Richasy.Controls.Reader.Models.Epub;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Composition.Interactions;
 using Windows.UI.Input;
-using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Documents;
@@ -18,137 +15,68 @@ using Windows.UI.Xaml.Media;
 
 namespace Richasy.Controls.Reader.Views
 {
-    [TemplatePart(Name = "TxtGrid", Type = typeof(Grid))]
-    [TemplatePart(Name = "TxtBlock", Type = typeof(RichTextBlock))]
-    public partial class EpubView : Control, IInteractionTrackerOwner
+    [TemplatePart(Name = "EpubGrid", Type = typeof(Grid))]
+    [TemplatePart(Name = "EpubBlock", Type = typeof(RichTextBlock))]
+    public partial class EpubView : ReaderViewBase
     {
-        public EpubView()
+        public EpubView() : base()
         {
             this.DefaultStyleKey = typeof(EpubView);
-
-            _gestureRecognizer = new GestureRecognizer();
-            _gestureRecognizer.GestureSettings = GestureSettings.ManipulationTranslateX;
-            _gestureRecognizer.ManipulationStarted += _gestureRecognizer_ManipulationStarted;
-            _gestureRecognizer.ManipulationUpdated += _gestureRecognizer_ManipulationUpdated;
-            _gestureRecognizer.ManipulationCompleted += _gestureRecognizer_ManipulationCompleted;
-
-            PointerWheelChangedEventHandler = new PointerEventHandler(_PointerWheelChanged);
-            PointerPressedEventHandler = new PointerEventHandler(_PointerPressed);
-            PointerMovedEventHandler = new PointerEventHandler(_PointerMoved);
-            PointerReleasedEventHandler = new PointerEventHandler(_PointerReleased);
-            PointerCanceledEventHandler = new PointerEventHandler(_PointerCanceled);
-            TouchTappedEventHandler = new TappedEventHandler(_TouchTapped);
-            TouchHoldingEventHandler = new HoldingEventHandler(_TouchHolding);
-
-            this.AddHandler(UIElement.PointerWheelChangedEvent, PointerWheelChangedEventHandler, true);
-            this.AddHandler(UIElement.PointerPressedEvent, PointerPressedEventHandler, true);
-            this.AddHandler(UIElement.PointerMovedEvent, PointerMovedEventHandler, true);
-            this.AddHandler(UIElement.PointerReleasedEvent, PointerReleasedEventHandler, true);
-            this.AddHandler(UIElement.PointerCanceledEvent, PointerCanceledEventHandler, true);
-            this.AddHandler(UIElement.TappedEvent, TouchTappedEventHandler, true);
-            this.AddHandler(UIElement.HoldingEvent, TouchHoldingEventHandler, true);
-            this.SizeChanged += EpubView_SizeChanged;
-
-
-            IndexWaiter = new EventWaiter();
-            CreateContentDelayer = new EventDelayer();
-            CreateContentDelayer.ResetWhenDelayed = true;
-            CreateContentDelayer.Arrived += CreateContentWaiter_Arrived;
         }
-        
+
         public void Init(EpubBook book, EpubViewStyle style)
         {
             Book = book;
+            ViewStyle = style;
             helper = new HtmlHelper(book.Resources.Images.ToList(), style);
             helper.LinkTapped += (_s, _e) => { LinkTapped?.Invoke(_s, _e); };
             helper.ImageTapped += (_s, _e) => { ImageTapped?.Invoke(_s, _e); };
         }
         protected override void OnApplyTemplate()
         {
-            _epubBlock = GetTemplateChild("EpubBlock") as RichTextBlock;
-            _epubGrid = GetTemplateChild("EpubGrid") as Grid;
-
-            FlyoutInit();
-
-            SetupComposition();
-            SetupTracker();
+            _displayBlock = GetTemplateChild("EpubBlock") as RichTextBlock;
+            _displayContainer = GetTemplateChild("EpubGrid") as Grid;
 
             base.OnApplyTemplate();
         }
 
-        public async void SetContent(string Content, ReaderStartMode mode = ReaderStartMode.First, int startLength = 0)
-        {
-            _isSizeChangeLoaded = false;
-            _content = Content;
-            LoadingChanged?.Invoke(this, true);
-            await CreateContent();
-
-            _startTextIndex = startLength;
-            IsCoreSelectedChanged = true;
-            var index = 0;
-            switch (mode)
-            {
-                case ReaderStartMode.First:
-                    index = 0;
-                    break;
-                case ReaderStartMode.Last:
-                    index = Count - 1;
-                    break;
-                case ReaderStartMode.Stay:
-                    index = Index > Count - 1 ? Count - 1 : Index;
-                    break;
-            }
-            if (startLength != 0)
-            {
-                int childrenCount = _epubGrid.Children.Count;
-                var signNumber = Content.Length / childrenCount;
-                index = Convert.ToInt32(Math.Floor(startLength / (signNumber * 1.0)));
-                index = Convert.ToInt32(Math.Round(index / (_columns * 1.0)));
-                index = index > Count - 1 ? Count - 1 : index;
-            }
-            Index = index;
-            GoToIndex(Index, false);
-            IsCoreSelectedChanged = false;
-            LoadingChanged?.Invoke(this, false);
-        }
-
-        private async Task CreateContent()
+        protected override async Task CreateContent()
         {
             int count = 0;
-            _epubGrid.ColumnDefinitions.Clear();
-            if (_epubGrid.Children.Count > 1)
+            _displayContainer.ColumnDefinitions.Clear();
+            if (_displayContainer.Children.Count > 1)
             {
-                for (int i = _epubGrid.Children.Count - 1; i > 0; i--)
+                for (int i = _displayContainer.Children.Count - 1; i > 0; i--)
                 {
-                    _epubGrid.Children.RemoveAt(i);
+                    _displayContainer.Children.RemoveAt(i);
                 }
             }
-            _epubBlock.Blocks.Clear();
+            _displayBlock.Blocks.Clear();
 
             double singleWidth = ParentWidth / _columns;
-            double singleHeight = _epubGrid.ActualHeight;
+            double singleHeight = _displayContainer.ActualHeight;
             double actualWidth = singleWidth - ViewStyle.Padding.Left - ViewStyle.Padding.Right;
             double actualHeight = singleHeight - ViewStyle.Padding.Top - ViewStyle.Padding.Bottom;
-            _epubGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(singleWidth) });
+            _displayContainer.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(singleWidth) });
 
-            await RenderContentAsync(_content);
+            await RenderContent(_content);
             count++;
 
-            _epubBlock.Width = actualWidth;
-            _epubBlock.Height = actualHeight;
-            _epubBlock.Measure(new Size(_epubGrid.ActualWidth, _epubGrid.ActualHeight));
+            _displayBlock.Width = actualWidth;
+            _displayBlock.Height = actualHeight;
+            _displayBlock.Measure(new Size(_displayContainer.ActualWidth, _displayContainer.ActualHeight));
 
-            FrameworkElement renderTarget = _epubBlock;
-            bool hasOverflow = _epubBlock.HasOverflowContent;
+            FrameworkElement renderTarget = _displayBlock;
+            bool hasOverflow = _displayBlock.HasOverflowContent;
 
             while (hasOverflow)
             {
                 var tmp = RenderOverflow(renderTarget);
                 tmp.Width = actualWidth;
-                _epubGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(singleWidth) });
+                _displayContainer.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(singleWidth) });
                 count++;
-                _epubGrid.Children.Add(tmp);
-                Grid.SetColumn(tmp, _epubGrid.ColumnDefinitions.Count - 1);
+                _displayContainer.Children.Add(tmp);
+                Grid.SetColumn(tmp, _displayContainer.ColumnDefinitions.Count - 1);
 
                 tmp.Height = actualHeight;
                 tmp.Measure(new Size(singleWidth, singleHeight));
@@ -160,12 +88,11 @@ namespace Richasy.Controls.Reader.Views
             UpdateStyle();
         }
 
-        public void UpdateStyle(EpubViewStyle style = null)
+        protected override void UpdateStyle(ReaderStyle inputStyle = null)
         {
-            if (style != null)
-                ViewStyle = style;
-            else
-                style = ViewStyle;
+            if (inputStyle != null)
+                ViewStyle = inputStyle;
+            var style = ViewStyle as EpubViewStyle;
             if (style.IsAcrylicBackground)
             {
                 var opacity = Convert.ToInt32(style.Background.A) / 255.0;
@@ -182,7 +109,7 @@ namespace Richasy.Controls.Reader.Views
             }
             else
                 Background = new SolidColorBrush(style.Background);
-            foreach (var item in _epubGrid.Children)
+            foreach (var item in _displayContainer.Children)
             {
                 if (item is RichTextBlock rtb)
                 {
@@ -199,7 +126,7 @@ namespace Richasy.Controls.Reader.Views
             }
         }
 
-        private async Task RenderContentAsync(string content)
+        protected override async Task RenderContent(string content)
         {
             if (string.IsNullOrEmpty(content)) return;
             await helper.InitAsync(content);
@@ -214,7 +141,7 @@ namespace Richasy.Controls.Reader.Views
                             if (p.Inlines.Count == 0)
                                 continue;
                         }
-                        _epubBlock.Blocks.Add(item);
+                        _displayBlock.Blocks.Add(item);
                     }
                     catch (Exception)
                     {
@@ -223,18 +150,6 @@ namespace Richasy.Controls.Reader.Views
                 }
             }
 
-        }
-
-        private RichTextBlockOverflow RenderOverflow(FrameworkElement target)
-        {
-            var tmp = new RichTextBlockOverflow();
-            if (target is RichTextBlock richBlock)
-                richBlock.OverflowContentTarget = tmp;
-            else if (target is RichTextBlockOverflow of)
-                of.OverflowContentTarget = tmp;
-
-            tmp.Padding = Padding;
-            return tmp;
         }
     }
 }

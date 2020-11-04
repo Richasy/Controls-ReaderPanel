@@ -1,4 +1,5 @@
-﻿using Richasy.Controls.Reader.Models;
+﻿using Richasy.Controls.Reader.Enums;
+using Richasy.Controls.Reader.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,7 +54,7 @@ namespace Richasy.Controls.Reader
             {
                 CurrentChapter = prev;
                 ChapterChanged?.Invoke(this, prev);
-            }   
+            }
         }
 
         public void OnNextPageSelected(object sender, EventArgs args)
@@ -86,7 +87,7 @@ namespace Richasy.Controls.Reader
                 string content = nextOrder?.TextContent ?? next.Title;
                 _epubView.SetContent(content, Enums.ReaderStartMode.First);
             }
-            
+
             if (!next.Equals(CurrentChapter))
             {
                 CurrentChapter = next;
@@ -106,16 +107,16 @@ namespace Richasy.Controls.Reader
 
             double progress = 0;
             if (ReaderType == Enums.ReaderType.Epub)
-                progress = (_tempEpubChapterIndex*1.0 / _epubContent.SpecialResources.HtmlInReadingOrder.Count * 1.0) * 100.0;
+                progress = (_tempEpubChapterIndex * 1.0 / _epubContent.SpecialResources.HtmlInReadingOrder.Count * 1.0) * 100.0;
             else
                 progress = ((CurrentChapter.StartLength + addonLength) * 1.0 / _txtContent.Length * 1.0) * 100;
             var history = new History(CurrentChapter, addonLength, progress);
             ProgressChanged?.Invoke(this, history);
         }
 
-        public void OnLoad(object sender, bool e)
+        public void OnLoad(object sender, LoadingStatus e)
         {
-            if (e)
+            if (e == LoadingStatus.Completed)
                 SetContentCompleted?.Invoke(this, EventArgs.Empty);
             else
                 SetContentStarting?.Invoke(this, EventArgs.Empty);

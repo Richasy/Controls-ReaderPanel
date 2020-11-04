@@ -1,21 +1,16 @@
-﻿using Richasy.Controls.Reader.Models;
+﻿using Richasy.Controls.Reader.Enums;
+using Richasy.Controls.Reader.Models;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
 
 namespace Richasy.Controls.Reader.Views
 {
-    public partial class TxtView
+    public partial class ReaderViewBase
     {
         public event EventHandler PrevPageSelected;
         public event EventHandler NextPageSelected;
         public event EventHandler<int> ProgressChanged;
-        public event EventHandler<bool> LoadingChanged;
+        public event EventHandler<LoadingStatus> LoadingStatusChanged;
         public event EventHandler<PositionEventArgs> TouchHolding;
         public event EventHandler<PositionEventArgs> TouchTapped;
 
@@ -34,7 +29,7 @@ namespace Richasy.Controls.Reader.Views
             ProgressChanged?.Invoke(this, _startTextIndex);
         }
 
-        private void TxtView_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void ReaderViewBase_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             SizeChangeHandle();
         }
@@ -45,7 +40,7 @@ namespace Richasy.Controls.Reader.Views
             CreateContentDelayer.Delay();
         }
 
-        private void CreateContentWaiter_Arrived(object sender, EventArgs e)
+        private async void CreateContentWaiter_Arrived(object sender, EventArgs e)
         {
             if(!_isSizeChangeLoaded)
             {
@@ -54,7 +49,7 @@ namespace Richasy.Controls.Reader.Views
             }
             else
             {
-                CreateContent();
+                await CreateContent();
                 IsCoreSelectedChanged = true;
                 if (Index > Count - 1)
                 {

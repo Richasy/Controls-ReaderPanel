@@ -11,55 +11,64 @@
         <local:LevelMarginCovnerter x:Key="LevelMarginConverter"/>
         <DataTemplate x:DataType="models:Chapter" x:Key="ChapterItemTemplate">
             <Grid Padding="10,5">
-                <TextBlock Text="{x:Bind Title}" MaxWidth="200" TextTrimming="CharacterEllipsis"
+                <TextBlock Text="{x:Bind Title}" TextTrimming="CharacterEllipsis"
                            HorizontalAlignment="Left" ToolTipService.ToolTip="{x:Bind Title}"
                            Margin="{x:Bind Level,Converter={StaticResource LevelMarginConverter}}"/>
             </Grid>
         </DataTemplate>
     </Page.Resources>
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <ListView x:Name="ChapterListView"
+        <Button HorizontalAlignment="Center" VerticalAlignment="Center"
+                Content="Open book file" Click="Button_Click"
+                x:Name="FileButton"/>
+        <Grid x:Name="DisplayGrid" Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <ListView x:Name="ChapterListView"
                   IsItemClickEnabled="True"
                   ItemTemplate="{StaticResource ChapterItemTemplate}"
                   ItemClick="ChapterListView_ItemClick"
                   ItemsSource="{x:Bind ChapterCollection}"
+                  Width="300"
                   Background="{ThemeResource SystemControlAcrylicWindowBrush}"
                   />
-        <reader:ReaderPanel x:Name="Reader" ChapterLoaded="Reader_ChapterLoaded"
+            <reader:ReaderPanel x:Name="Reader" ChapterLoaded="Reader_ChapterLoaded"
                             OpenStarting="Reader_OpenStarting"
                             OpenCompleted="Reader_OpenCompleted"
                             ProgressChanged="Reader_ProgressChanged"
                             SingleColumnMaxWidth="1000"
                             ChapterChanged="Reader_ChapterChanged"
-                            Loaded="Reader_Loaded" Grid.Column="1">
-            <reader:ReaderPanel.Header>
-                <TextBlock Style="{StaticResource BaseTextBlockStyle}"
+                                SetContentStarting="Reader_SetContentStarting"
+                                SetContentCompleted="Reader_SetContentCompleted"
+                            Grid.Column="1">
+                <reader:ReaderPanel.Header>
+                    <TextBlock Style="{StaticResource BaseTextBlockStyle}"
                            x:Name="ChapterTitleBlock" HorizontalAlignment="Center"
                            Margin="0,10"/>
-            </reader:ReaderPanel.Header>
+                </reader:ReaderPanel.Header>
 
-            <reader:ReaderPanel.Footer>
-                <TextBlock x:Name="ProgressBlock" Style="{StaticResource BaseTextBlockStyle}"
+                <reader:ReaderPanel.Footer>
+                    <TextBlock x:Name="ProgressBlock" Style="{StaticResource BaseTextBlockStyle}"
                            HorizontalAlignment="Center" Margin="0,10"/>
-            </reader:ReaderPanel.Footer>
+                </reader:ReaderPanel.Footer>
 
-            <reader:ReaderPanel.ReaderFlyout>
-                <CommandBarFlyout>
-                    <AppBarButton Icon="Accept" Label="Test"/>
-                    <AppBarButton Icon="Account"  Label="Test"/>
-                    <AppBarButton Icon="Add"  Label="Test"/>
-                    <CommandBarFlyout.SecondaryCommands>
-                        <AppBarButton Icon="Home" Label="Test"/>
-                    </CommandBarFlyout.SecondaryCommands>
-                </CommandBarFlyout>
-            </reader:ReaderPanel.ReaderFlyout>
-        </reader:ReaderPanel>
-        <ProgressRing VerticalAlignment="Center" HorizontalAlignment="Center"
-                      Width="40" Height="40" Name="LoadingRing" Grid.Column="1"
+                <reader:ReaderPanel.ReaderFlyout>
+                    <CommandBarFlyout>
+                        <AppBarButton Icon="Accept" Label="Test"/>
+                        <AppBarButton Icon="Account"  Label="Test"/>
+                        <AppBarButton Icon="Add"  Label="Test"/>
+                        <CommandBarFlyout.SecondaryCommands>
+                            <AppBarButton Icon="Home" Label="Test"/>
+                        </CommandBarFlyout.SecondaryCommands>
+                    </CommandBarFlyout>
+                </reader:ReaderPanel.ReaderFlyout>
+            </reader:ReaderPanel>
+            <ProgressRing VerticalAlignment="Center" HorizontalAlignment="Center"
+                      Width="40" Height="40" Name="LoadingRing" Grid.Column="1" IsActive="True"
                       />
+        </Grid>
     </Grid>
+    
 </Page>

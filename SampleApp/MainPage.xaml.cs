@@ -1,7 +1,9 @@
 ﻿using Richasy.Controls.Reader.Models;
 using Richasy.Controls.Reader.Models.Epub;
+using Richasy.Helper.UWP;
 using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -49,25 +51,9 @@ namespace SampleApp
             ProgressBlock.Text = Math.Ceiling(e.Progress) + "%";
         }
 
-        private async void Reader_Loaded(object sender, RoutedEventArgs e)
-        {
-            var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/归藏图：引渡人.txt"));
-            try
-            {
-                Reader.ChapterDivisionRegex = new Regex(@"^(Ⅰ|Ⅱ|Ⅲ|Ⅳ|Ⅴ|Ⅵ|Ⅶ|Ⅷ|Ⅸ|Ⅹ).+");
-                await Reader.OpenAsync(file, new TxtViewStyle());
-            }
-            catch (Exception ex)
-            {
-                await new MessageDialog(ex.Message).ShowAsync();
-                LoadingRing.IsActive = false;
-            }
-
-        }
 
         private void ChapterListView_ItemClick(object sender, ItemClickEventArgs e)
         {
-
             var chapter = e.ClickedItem as Chapter;
             Reader.LoadChapter(chapter);
         }
@@ -78,6 +64,46 @@ namespace SampleApp
             ChapterTitleBlock.Text = title;
             ChapterListView.SelectedItem = e;
             ChapterListView.ScrollIntoView(e, ScrollIntoViewAlignment.Leading);
+        }
+
+        private async void Button_Click(object sender, RoutedEventArgs e)
+        {
+            var instance = new Instance();
+            var file = await instance.IO.OpenLocalFileAsync(".epub", ".txt");
+            if (file != null)
+            {
+                DisplayGrid.Visibility = Visibility.Visible;
+                FileButton.Visibility = Visibility.Collapsed;
+                try
+                {
+                    if (Path.GetExtension(file.Path) == ".epub")
+                    {
+                        await Reader.OpenAsync(file, new EpubViewStyle());
+                    }
+                    else
+                    {
+                        await Reader.OpenAsync(file, new TxtViewStyle());
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await new MessageDialog(ex.Message).ShowAsync();
+                    DisplayGrid.Visibility = Visibility.Collapsed;
+                    FileButton.Visibility = Visibility.Visible;
+                    LoadingRing.IsActive = false;
+                }
+                
+            }
+        }
+
+        private void Reader_SetContentStarting(object sender, EventArgs e)
+        {
+            LoadingRing.IsActive = true;
+        }
+
+        private void Reader_SetContentCompleted(object sender, EventArgs e)
+        {
+            LoadingRing.IsActive = false;
         }
     }
 

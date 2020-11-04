@@ -62,7 +62,7 @@ namespace Richasy.Controls.Reader
                         _txtView = new TxtView();
                         _txtView.PrevPageSelected += OnPrevPageSelected;
                         _txtView.NextPageSelected += OnNextPageSelected;
-                        _txtView.LoadingChanged += OnLoad;
+                        _txtView.LoadingStatusChanged += OnLoad;
                         _txtView.ProgressChanged += OnProgressChanged;
                         _txtView.TouchHolding += OnTouchHolding;
                         _txtView.TouchTapped += (_s, _e) => { TouchTapped?.Invoke(_s, _e); };
@@ -88,7 +88,7 @@ namespace Richasy.Controls.Reader
                         _epubView = new EpubView();
                         _epubView.PrevPageSelected += OnPrevPageSelected;
                         _epubView.NextPageSelected += OnNextPageSelected;
-                        _epubView.LoadingChanged += OnLoad;
+                        _epubView.LoadingStatusChanged += OnLoad;
                         _epubView.ProgressChanged += OnProgressChanged;
                         _epubView.TouchHolding += OnTouchHolding;
                         _epubView.TouchTapped += (_s, _e) => { TouchTapped?.Invoke(_s, _e); };

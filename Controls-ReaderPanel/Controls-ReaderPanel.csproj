@@ -120,10 +120,11 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Enums\LoadingStatus.cs" />
     <Compile Include="Enums\ReaderType.cs" />
     <Compile Include="Enums\ReaderStartMode.cs" />
     <Compile Include="Models\Chapter.cs" />
-    <Compile Include="Models\EpubViewStyle.cs" />
+    <Compile Include="Models\Style\EpubViewStyle.cs" />
     <Compile Include="Models\Epub\EpubArchive.cs" />
     <Compile Include="Models\Epub\EpubBook.cs" />
     <Compile Include="Models\Epub\EpubException.cs" />
@@ -153,16 +154,16 @@
     <Compile Include="Models\Epub\Format\Writers\OpfWriter.cs" />
     <Compile Include="Models\Epub\Misc\Href.cs" />
     <Compile Include="Models\Epub\Misc\Html.cs" />
-    <Compile Include="Models\EventDelayer.cs" />
-    <Compile Include="Models\EventWaiter.cs" />
+    <Compile Include="Models\Helpers\EventDelayer.cs" />
+    <Compile Include="Models\Helpers\EventWaiter.cs" />
     <Compile Include="Models\Helpers\EncodingHelper.cs" />
     <Compile Include="Models\Helpers\HtmlHelper.cs" />
     <Compile Include="Models\History.cs" />
-    <Compile Include="Models\ImageEventArgs.cs" />
-    <Compile Include="Models\LinkEventArgs.cs" />
-    <Compile Include="Models\PositionEventArgs.cs" />
-    <Compile Include="Models\ReaderStyle.cs" />
-    <Compile Include="Models\TxtViewStyle.cs" />
+    <Compile Include="Models\EventArgs\ImageEventArgs.cs" />
+    <Compile Include="Models\EventArgs\LinkEventArgs.cs" />
+    <Compile Include="Models\EventArgs\PositionEventArgs.cs" />
+    <Compile Include="Models\Style\ReaderStyle.cs" />
+    <Compile Include="Models\Style\TxtViewStyle.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReaderPanel.cs" />
     <Compile Include="ReaderPanel.Events.cs" />
@@ -172,13 +173,12 @@
     <Compile Include="Views\EpubView\EpubView.cs" />
     <Compile Include="Views\EpubView\EpubView.Events.cs" />
     <Compile Include="Views\EpubView\EpubView.Fields.cs" />
-    <Compile Include="Views\EpubView\EpubView.Methods.cs" />
-    <Compile Include="Views\EpubView\EpubView.Properties.cs" />
+    <Compile Include="Views\ReaderViewBase.cs" />
+    <Compile Include="Views\ReaderViewBase.Events.cs" />
+    <Compile Include="Views\ReaderViewBase.Fields.cs" />
+    <Compile Include="Views\ReaderViewBase.Methods.cs" />
+    <Compile Include="Views\ReaderViewBase.Properties.cs" />
     <Compile Include="Views\TxtView\TxtView.cs" />
-    <Compile Include="Views\TxtView\TxtView.Events.cs" />
-    <Compile Include="Views\TxtView\TxtView.Fields.cs" />
-    <Compile Include="Views\TxtView\TxtView.Methods.cs" />
-    <Compile Include="Views\TxtView\TxtView.Properties.cs" />
     <EmbeddedResource Include="Properties\Controls_ReaderPanel.rd.xml" />
   </ItemGroup>
   <ItemGroup>

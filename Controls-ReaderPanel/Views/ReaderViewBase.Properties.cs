@@ -10,7 +10,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 
 namespace Richasy.Controls.Reader.Views
 {
-    public partial class EpubView
+    public partial class ReaderViewBase
     {
 
         public int Index
@@ -21,14 +21,14 @@ namespace Richasy.Controls.Reader.Views
 
         // Using a DependencyProperty as the backing store for Index.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty IndexProperty =
-            DependencyProperty.Register("Index", typeof(int), typeof(EpubView), new PropertyMetadata(0, new PropertyChangedCallback(Index_Changed)));
+            DependencyProperty.Register("Index", typeof(int), typeof(ReaderViewBase), new PropertyMetadata(0, new PropertyChangedCallback(Index_Changed)));
 
         private static void Index_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (e.NewValue != e.OldValue)
             {
                 var index = (int)e.NewValue;
-                if (d is EpubView sender)
+                if (d is ReaderViewBase sender)
                 {
                     if (!sender.IsCoreSelectedChanged)
                     {
@@ -36,7 +36,7 @@ namespace Richasy.Controls.Reader.Views
                     }
                     try
                     {
-                        double xi = (Math.Abs(index * sender._columns) * 1.0) / sender._epubGrid.Children.Count;
+                        double xi = (Math.Abs(index * sender._columns) * 1.0) / sender._displayContainer.Children.Count;
                         int length = Convert.ToInt32(sender._content.Length * xi);
                         sender._startTextIndex = length;
                     }
@@ -61,13 +61,13 @@ namespace Richasy.Controls.Reader.Views
 
         // Using a DependencyProperty as the backing store for Count.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty CountProperty =
-            DependencyProperty.Register("Count", typeof(int), typeof(EpubView), new PropertyMetadata(0, new PropertyChangedCallback(Count_Changed)));
+            DependencyProperty.Register("Count", typeof(int), typeof(ReaderViewBase), new PropertyMetadata(0, new PropertyChangedCallback(Count_Changed)));
 
         private static void Count_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (e.NewValue != e.OldValue)
             {
-                if (d is EpubView sender)
+                if (d is ReaderViewBase sender)
                 {
                     sender.InitTrackerPositions();
                 }
@@ -82,23 +82,23 @@ namespace Richasy.Controls.Reader.Views
 
         // Using a DependencyProperty as the backing store for SingleColumnMaxWidth.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SingleColumnMaxWidthProperty =
-            DependencyProperty.Register("SingleColumnMaxWidth", typeof(double), typeof(EpubView), new PropertyMetadata(800.0, new PropertyChangedCallback(SingleColumnMaxWidth_Changed)));
+            DependencyProperty.Register("SingleColumnMaxWidth", typeof(double), typeof(ReaderViewBase), new PropertyMetadata(800.0, new PropertyChangedCallback(SingleColumnMaxWidth_Changed)));
 
         private static void SingleColumnMaxWidth_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var sender = d as EpubView;
+            var sender = d as ReaderViewBase;
             sender.SizeChangeHandle();
         }
 
-        public EpubViewStyle ViewStyle
+        public ReaderStyle ViewStyle
         {
-            get { return (EpubViewStyle)GetValue(ViewStyleProperty); }
+            get { return (ReaderStyle)GetValue(ViewStyleProperty); }
             set { SetValue(ViewStyleProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for ViewStyle.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ViewStyleProperty =
-            DependencyProperty.Register("ViewStyle", typeof(EpubViewStyle), typeof(EpubView), new PropertyMetadata(new EpubViewStyle()));
+            DependencyProperty.Register("ViewStyle", typeof(ReaderStyle), typeof(ReaderViewBase), new PropertyMetadata(new ReaderStyle()));
 
         public FlyoutBase ReaderFlyout
         {
@@ -108,15 +108,15 @@ namespace Richasy.Controls.Reader.Views
 
         // Using a DependencyProperty as the backing store for ReadFlyout.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ReaderFlyoutProperty =
-            DependencyProperty.Register("ReaderFlyout", typeof(FlyoutBase), typeof(EpubView), new PropertyMetadata(null, new PropertyChangedCallback(ReaderFlyout_Changed)));
+            DependencyProperty.Register("ReaderFlyout", typeof(FlyoutBase), typeof(ReaderViewBase), new PropertyMetadata(null, new PropertyChangedCallback(ReaderFlyout_Changed)));
 
         private static void ReaderFlyout_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (e.NewValue is FlyoutBase flyout && e.NewValue != null)
             {
-                var sender = d as EpubView;
-                if (sender._epubBlock != null)
-                    sender._epubBlock.SelectionFlyout = sender._epubBlock.ContextFlyout = flyout;
+                var sender = d as ReaderViewBase;
+                if (sender._displayBlock != null)
+                    sender._displayBlock.SelectionFlyout = sender._displayBlock.ContextFlyout = flyout;
             }
         }
     }

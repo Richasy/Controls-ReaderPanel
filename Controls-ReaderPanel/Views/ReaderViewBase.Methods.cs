@@ -1,13 +1,10 @@
 ﻿using Richasy.Controls.Reader.Models;
 using System;
-using System.Linq;
 using System.Numerics;
-using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Composition;
 using Windows.UI.Composition.Interactions;
 using Windows.UI.Input;
-using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Hosting;
@@ -15,7 +12,7 @@ using Windows.UI.Xaml.Input;
 
 namespace Richasy.Controls.Reader.Views
 {
-    public partial class TxtView
+    public partial class ReaderViewBase
     {
         #region Private Method
 
@@ -28,7 +25,7 @@ namespace Richasy.Controls.Reader.Views
             OffsetAnimation.Target = "Offset";
             OffsetAnimation.StopBehavior = AnimationStopBehavior.LeaveCurrentValue;
 
-            PanelVisual = ElementCompositionPreview.GetElementVisual(_txtGrid);
+            PanelVisual = ElementCompositionPreview.GetElementVisual(_displayContainer);
             ReaderViewVisual = ElementCompositionPreview.GetElementVisual(this);
         }
 
@@ -68,8 +65,8 @@ namespace Richasy.Controls.Reader.Views
         private void GoToIndex(int index, bool UseAnimation = true)
         {
             if (index < 0) return;
-            var temp = _txtBlock.GetPositionFromPoint(new Point(0, 0));
-            _txtBlock.Select(temp,temp);
+            var temp = _displayBlock.GetPositionFromPoint(new Point(0, 0));
+            _displayBlock.Select(temp,temp);
             if (UseAnimation)
             {
                 OffsetAnimation.InsertKeyFrame(1f, new Vector3((float)(this.ActualWidth * index), 0f, 0f));
@@ -84,8 +81,8 @@ namespace Richasy.Controls.Reader.Views
 
         private void FlyoutInit()
         {
-            _txtBlock.ContextFlyout = ReaderFlyout;
-            _txtBlock.SelectionFlyout = null;
+            _displayBlock.ContextFlyout = ReaderFlyout;
+            _displayBlock.SelectionFlyout = null;
         }
         #endregion Private Method
 
@@ -178,7 +175,7 @@ namespace Richasy.Controls.Reader.Views
                     var pointer = e.GetCurrentPoint(this);
                     if (pointer.Properties.IsLeftButtonPressed)
                     {
-                        foreach (var item in _txtGrid.Children)
+                        foreach (var item in _displayContainer.Children)
                         {
                             if (item is RichTextBlock rtb)
                             {
@@ -219,7 +216,7 @@ namespace Richasy.Controls.Reader.Views
             {
                 if (pointer.Properties.IsLeftButtonPressed)
                 {
-                    foreach (var item in _txtGrid.Children)
+                    foreach (var item in _displayContainer.Children)
                     {
                         if (item is RichTextBlock rtb)
                         {
@@ -230,9 +227,6 @@ namespace Richasy.Controls.Reader.Views
                         }
                     }
                 }
-
-                //var pointers = e.GetIntermediatePoints(this);
-                //_gestureRecognizer.ProcessMoveEvents(pointers);
             }
         }
 
@@ -325,20 +319,22 @@ namespace Richasy.Controls.Reader.Views
         private void _TouchHolding(object sender, HoldingRoutedEventArgs e)
         {
             e.Handled = true;
-            var position = e.GetPosition(this);
+            
             if (e.PointerDeviceType != Windows.Devices.Input.PointerDeviceType.Mouse)
             {
+                var position = e.GetPosition(this);
                 TouchHolding?.Invoke(this, new PositionEventArgs(position));
             }
         }
 
         private void _TouchTapped(object sender, TappedRoutedEventArgs e)
         {
-            var position = e.GetPosition(this);
-            var width = this.ActualWidth;
-            double controlWidth = width / 5.0;
-
-            TouchTapped?.Invoke(this, new PositionEventArgs(position));
+            if(e.PointerDeviceType != Windows.Devices.Input.PointerDeviceType.Mouse)
+            {
+                e.Handled = true;
+                var position = e.GetPosition(this);
+                TouchTapped?.Invoke(this, new PositionEventArgs(position));
+            }
         }
         #endregion
     }

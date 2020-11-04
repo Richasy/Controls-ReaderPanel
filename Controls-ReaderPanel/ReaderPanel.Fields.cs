@@ -2,12 +2,8 @@
 using Richasy.Controls.Reader.Models;
 using Richasy.Controls.Reader.Models.Epub;
 using Richasy.Controls.Reader.Views;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Windows.UI.Xaml.Controls;
 
 namespace Richasy.Controls.Reader
@@ -66,10 +62,8 @@ namespace Richasy.Controls.Reader
         {
             get
             {
-                if (ReaderType == ReaderType.Txt && _txtView != null)
-                    return _txtView.SelectedText;
-                else if (ReaderType == ReaderType.Epub && _epubView != null)
-                    return _epubView.SelectedText;
+                if (_mainPresenter.Content != null)
+                    return (_mainPresenter.Content as ReaderViewBase).SelectedText;
                 else
                     return "";
             }

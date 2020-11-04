@@ -147,6 +147,7 @@ namespace Richasy.Controls.Reader.Models
             if (parent == null)
                 parent = new Paragraph();
             var p = parent as Paragraph;
+            p.Margin = new Thickness(0, 0, 0, Style.SegmentSpacing);
             switch (node.Name.ToLower())
             {
                 case "#text":
