@@ -110,6 +110,16 @@ namespace SampleApp
         {
             await new MessageDialog($"Current selected text: {Reader.SelectedText}").ShowAsync();
         }
+
+        private async void Reader_ImageTapped(object sender, ImageEventArgs e)
+        {
+            await new MessageDialog(e.Base64).ShowAsync();
+        }
+
+        private async void Reader_LinkTapped(object sender, LinkEventArgs e)
+        {
+            await new MessageDialog(e.Id + ":" + e.FileName).ShowAsync();
+        }
     }
 
     public class LevelMarginCovnerter : IValueConverter
