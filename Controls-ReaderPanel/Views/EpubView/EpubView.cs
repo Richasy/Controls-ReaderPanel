@@ -88,7 +88,7 @@ namespace Richasy.Controls.Reader.Views
             UpdateStyle();
         }
 
-        protected override void UpdateStyle(ReaderStyle inputStyle = null)
+        public override void UpdateStyle(ReaderStyle inputStyle = null)
         {
             if (inputStyle != null)
                 ViewStyle = inputStyle;

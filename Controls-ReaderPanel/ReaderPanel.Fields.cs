@@ -28,7 +28,7 @@ namespace Richasy.Controls.Reader
         /// <summary>
         /// 章节字符数限制
         /// </summary>
-        private static int MAX_CHAPTER_LENGTH = 30;
+        private static int MAX_CHAPTER_LENGTH = 50;
 
         private bool _isLoading = false;
 

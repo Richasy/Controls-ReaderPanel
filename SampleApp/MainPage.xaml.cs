@@ -105,6 +105,11 @@ namespace SampleApp
         {
             LoadingRing.IsActive = false;
         }
+
+        private async void CommandButton_Click(object sender, RoutedEventArgs e)
+        {
+            await new MessageDialog($"Current selected text: {Reader.SelectedText}").ShowAsync();
+        }
     }
 
     public class LevelMarginCovnerter : IValueConverter

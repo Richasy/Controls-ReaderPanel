@@ -94,7 +94,7 @@ namespace Richasy.Controls.Reader.Views
 
         protected virtual async Task CreateContent() { }
 
-        protected virtual void UpdateStyle(ReaderStyle style = null){}
+        public virtual void UpdateStyle(ReaderStyle style = null){}
 
         protected virtual async Task RenderContent(string content) { }
 

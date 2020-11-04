@@ -56,11 +56,11 @@
 
                 <reader:ReaderPanel.ReaderFlyout>
                     <CommandBarFlyout>
-                        <AppBarButton Icon="Accept" Label="Test"/>
-                        <AppBarButton Icon="Account"  Label="Test"/>
-                        <AppBarButton Icon="Add"  Label="Test"/>
+                        <AppBarButton Icon="Accept" Label="Test" Click="CommandButton_Click"/>
+                        <AppBarButton Icon="Account"  Label="Test" Click="CommandButton_Click"/>
+                        <AppBarButton Icon="Add"  Label="Test" Click="CommandButton_Click"/>
                         <CommandBarFlyout.SecondaryCommands>
-                            <AppBarButton Icon="Home" Label="Test"/>
+                            <AppBarButton Icon="Home" Label="Test" Click="CommandButton_Click"/>
                         </CommandBarFlyout.SecondaryCommands>
                     </CommandBarFlyout>
                 </reader:ReaderPanel.ReaderFlyout>

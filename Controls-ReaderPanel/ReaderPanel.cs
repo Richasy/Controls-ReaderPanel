@@ -20,6 +20,7 @@ namespace Richasy.Controls.Reader
         public ReaderPanel()
         {
             this.DefaultStyleKey = typeof(ReaderPanel);
+            // 默认分章表达式
             ChapterDivisionRegex = new Regex(@"第(.{1,9})[章节卷集部篇回幕计](\s{0})(.*)($\s*)");
             ChapterEndKey = new string[] { "部", "卷", "章", "节", "集", "回", "幕", "计", " " };
             ChapterExtraKey = new string[] { "序", "前言", "后记", "楔子", "附录", "外传" };
@@ -120,6 +121,20 @@ namespace Richasy.Controls.Reader
         public void LoadChapter(Chapter chapter)
         {
             SetProgress(chapter, 0);
+        }
+
+        /// <summary>
+        /// 更新阅读器样式（视图与样式需匹配，比如阅读Txt时需传入TxtViewStyle）
+        /// </summary>
+        /// <param name="style">阅读器样式</param>
+        public void UpdateStyle(ReaderStyle style)
+        {
+            if ((ReaderType == Enums.ReaderType.Txt && !(style is TxtViewStyle))
+                || (ReaderType == Enums.ReaderType.Epub && !(style is EpubViewStyle)))
+                throw new ArgumentException("The format of the view and style must match");
+            var view = _mainPresenter.Content as ReaderViewBase;
+            if (view != null)
+                view.UpdateStyle(style);
         }
     }
 }
