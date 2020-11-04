@@ -215,6 +215,7 @@ namespace Richasy.Controls.Reader.Views
                     var paragraph = new Paragraph();
                     paragraph.Inlines.Add(run);
                     paragraph.TextIndent = ViewStyle.FontSize * ViewStyle.TextIndent;
+                    paragraph.Margin= new Thickness(0, 0, 0, ViewStyle.SegmentSpacing);
                     return paragraph;
                 }
                 return null;

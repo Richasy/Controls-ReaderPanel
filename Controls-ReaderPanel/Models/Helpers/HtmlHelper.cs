@@ -91,6 +91,7 @@ namespace Richasy.Controls.Reader.Models
                         if (parent == null)
                         {
                             var p = new Paragraph();
+                            p.Margin = new Thickness(0, 0, 0, Style.SegmentSpacing);
                             p.TextIndent = Style.TextIndent * Style.FontSize;
                             p.Inlines.Add(new Run() { Text = text });
                             RenderBlocks.Add(p);
@@ -99,6 +100,7 @@ namespace Richasy.Controls.Reader.Models
                         {
                             var p = parent as Paragraph;
                             p.TextIndent = Style.TextIndent * Style.FontSize;
+                            p.Margin = new Thickness(0, 0, 0, Style.SegmentSpacing);
                             p.Inlines.Add(new Run() { Text = text });
                         }
                     }
@@ -284,37 +286,32 @@ namespace Richasy.Controls.Reader.Models
 
         private Inline CreateSubscript(HtmlNode node)
         {
-            var container = new InlineUIContainer();
-            var text = new TextBlock();
-            text.Text = node.InnerText.Trim();
-            text.FontSize = Style.FontSize / 1.5;
-            text.Margin = new Thickness(5, 0, 5, -5);
-            container.Child = text;
-            return container;
+            if (string.IsNullOrEmpty(node.InnerText.Trim()))
+                return null;
+            var run = new Run() { Text = node.InnerText.Trim() };
+            Typography.SetVariants(run, FontVariants.Subscript);
+            return run;
         }
 
         private Inline CreateSuperscript(HtmlNode node)
         {
-            var container = new InlineUIContainer();
-            if (node.SelectSingleNode("//a")!=null)
+            if (node.Descendants().Any(p => p.Name == "a"))
             {
-                var hyp = CreateHyperLink(node.SelectSingleNode("//a"));
+                var linkNode = node.Descendants().Where(p => p.Name == "a").FirstOrDefault();
+                var hyp = CreateHyperLink(linkNode, true);
                 return hyp;
             }
             else
             {
                 if (string.IsNullOrEmpty(node.InnerText.Trim()))
                     return null;
-                var text = new TextBlock();
-                text.Text = node.InnerText.Trim();
-                text.FontSize = Style.FontSize / 1.5;
-                text.Margin = new Thickness(5, 0, 5, Style.FontSize / -2);
-                container.Child = text;
+                var run = new Run() { Text = node.InnerText.Trim() };
+                Typography.SetVariants(run, FontVariants.Superscript);
+                return run;
             }
-            return container;
         }
 
-        private Inline CreateHyperLink(HtmlNode node)
+        private Inline CreateHyperLink(HtmlNode node, bool isSup = false)
         {
             if (string.IsNullOrEmpty(node.InnerText))
                 return null;
@@ -327,7 +324,12 @@ namespace Richasy.Controls.Reader.Models
             if (link.IndexOf("://") == -1)
                 link = "jump://" + link;
             var hyp = new Hyperlink();
-            hyp.Inlines.Add(new Run() { Text = node.InnerText });
+            var run = new Run() { Text = node.InnerText };
+            if (isSup)
+            {
+                run.FontSize = Style.FontSize / 1.5;
+            }
+            hyp.Inlines.Add(run);
             hyp.Click += async (_s, _e) =>
             {
                 if (link.StartsWith("jump://") && !args.Id.Contains("html"))
@@ -342,9 +344,9 @@ namespace Richasy.Controls.Reader.Models
         {
             if (string.IsNullOrEmpty(node.InnerText.Trim()))
                 return null;
-            Span s = new Span();
-            s.Inlines.Add(new Run() { Text = node.InnerText.Trim(), FontWeight = FontWeights.Bold });
-            return s;
+            Bold bold = new Bold();
+            bold.Inlines.Add(new Run() { Text = node.InnerText.Trim() });
+            return bold;
         }
 
         private Inline CreateLineThrough()
@@ -450,7 +452,7 @@ namespace Richasy.Controls.Reader.Models
                 FontSize = Style.FontSize / 1.1,
                 FontStyle = FontStyle.Oblique
             };
-            
+
         }
 
         private void CreateList(HtmlNode node, Block parent, bool isOrder = false)

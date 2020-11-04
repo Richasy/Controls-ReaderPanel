@@ -106,7 +106,7 @@ namespace Richasy.Controls.Reader
 
             double progress = 0;
             if (ReaderType == Enums.ReaderType.Epub)
-                progress = (CurrentChapter.Index / Chapters.Count * 1.0) * 100.0;
+                progress = (_tempEpubChapterIndex*1.0 / _epubContent.SpecialResources.HtmlInReadingOrder.Count * 1.0) * 100.0;
             else
                 progress = ((CurrentChapter.StartLength + addonLength) * 1.0 / _txtContent.Length * 1.0) * 100;
             var history = new History(CurrentChapter, addonLength, progress);

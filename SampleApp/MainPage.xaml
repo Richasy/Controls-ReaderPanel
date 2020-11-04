@@ -34,13 +34,14 @@
                             OpenCompleted="Reader_OpenCompleted"
                             ProgressChanged="Reader_ProgressChanged"
                             SingleColumnMaxWidth="1000"
+                            ChapterChanged="Reader_ChapterChanged"
                             Loaded="Reader_Loaded" Grid.Column="1">
             <reader:ReaderPanel.Header>
                 <TextBlock Style="{StaticResource BaseTextBlockStyle}"
                            x:Name="ChapterTitleBlock" HorizontalAlignment="Center"
                            Margin="0,10"/>
             </reader:ReaderPanel.Header>
-            
+
             <reader:ReaderPanel.Footer>
                 <TextBlock x:Name="ProgressBlock" Style="{StaticResource BaseTextBlockStyle}"
                            HorizontalAlignment="Center" Margin="0,10"/>

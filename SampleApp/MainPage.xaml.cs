@@ -10,6 +10,7 @@ using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Documents;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -45,20 +46,16 @@ namespace SampleApp
 
         private void Reader_ProgressChanged(object sender, History e)
         {
-            string title = e.Chapter.Title;
-            ChapterTitleBlock.Text = title;
             ProgressBlock.Text = Math.Ceiling(e.Progress) + "%";
-            ChapterListView.SelectedItem = e.Chapter;
-            ChapterListView.ScrollIntoView(e.Chapter, ScrollIntoViewAlignment.Leading);
         }
 
         private async void Reader_Loaded(object sender, RoutedEventArgs e)
         {
-            var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/中信国学大典·第1辑.epub"));
+            var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/归藏图：引渡人.txt"));
             try
             {
-                //Reader.ChapterDivisionRegex = new Regex(@"^(Ⅰ|Ⅱ|Ⅲ|Ⅳ|Ⅴ|Ⅵ|Ⅶ|Ⅷ|Ⅸ|Ⅹ).+");
-                await Reader.OpenAsync(file, new EpubViewStyle());
+                Reader.ChapterDivisionRegex = new Regex(@"^(Ⅰ|Ⅱ|Ⅲ|Ⅳ|Ⅴ|Ⅵ|Ⅶ|Ⅷ|Ⅸ|Ⅹ).+");
+                await Reader.OpenAsync(file, new TxtViewStyle());
             }
             catch (Exception ex)
             {
@@ -73,6 +70,14 @@ namespace SampleApp
 
             var chapter = e.ClickedItem as Chapter;
             Reader.LoadChapter(chapter);
+        }
+
+        private void Reader_ChapterChanged(object sender, Chapter e)
+        {
+            string title = e.Title;
+            ChapterTitleBlock.Text = title;
+            ChapterListView.SelectedItem = e;
+            ChapterListView.ScrollIntoView(e, ScrollIntoViewAlignment.Leading);
         }
     }
 
