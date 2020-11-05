@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Richasy.Controls.ReaderPanel</id>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <authors>Richasy</authors>
     <owners>Richasy</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/Richasy/Controls-ReaderPanel</projectUrl>
     <iconUrl>https://i.loli.net/2020/11/04/rRldg9FvEpjAuVY.png</iconUrl>
     <description>Reading control made for UWP, theoretically supports TXT and Epub</description>
-    <releaseNotes>First upload</releaseNotes>
+    <releaseNotes>Improve performance</releaseNotes>
     <copyright>Copyright 2020</copyright>
     <tags>Richasy uwp reader txt epub</tags>
     <dependencies>
