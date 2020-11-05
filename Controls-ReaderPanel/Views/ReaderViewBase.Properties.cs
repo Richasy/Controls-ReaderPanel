@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 
 namespace Richasy.Controls.Reader.Views
@@ -36,8 +37,16 @@ namespace Richasy.Controls.Reader.Views
                     }
                     try
                     {
-                        double xi = (Math.Abs(index * sender._columns) * 1.0) / sender._displayContainer.Children.Count;
-                        int length = Convert.ToInt32(sender._content.Length * xi);
+                        int currentOverflowIndex = sender._columns * index;
+                        int length = 0;
+                        if (currentOverflowIndex > sender._tempOverflowList.Count)
+                            length = sender._displayBlock.ContentEnd.Offset;
+                        else
+                        {
+                            var item = sender._tempOverflowList[currentOverflowIndex];
+                            if (item.Item2 is RichTextBlockOverflow of)
+                                length = of.ContentStart.Offset;
+                        }
                         sender._startTextIndex = length;
                     }
                     catch (Exception ex)
@@ -119,5 +128,17 @@ namespace Richasy.Controls.Reader.Views
                     sender._displayBlock.SelectionFlyout = sender._displayBlock.ContextFlyout = flyout;
             }
         }
+
+        public int OverflowRenderMaximum
+        {
+            get { return (int)GetValue(OverflowRenderMaximumProperty); }
+            set { SetValue(OverflowRenderMaximumProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for OverflowRenderMaximum.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty OverflowRenderMaximumProperty =
+            DependencyProperty.Register("OverflowRenderMaximum", typeof(int), typeof(ReaderViewBase), new PropertyMetadata(40));
+
+
     }
 }

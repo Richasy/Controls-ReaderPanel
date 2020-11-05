@@ -155,7 +155,6 @@
     <Compile Include="Models\Epub\Misc\Href.cs" />
     <Compile Include="Models\Epub\Misc\Html.cs" />
     <Compile Include="Models\Helpers\EventDelayer.cs" />
-    <Compile Include="Models\Helpers\EventWaiter.cs" />
     <Compile Include="Models\Helpers\EncodingHelper.cs" />
     <Compile Include="Models\Helpers\HtmlHelper.cs" />
     <Compile Include="Models\History.cs" />

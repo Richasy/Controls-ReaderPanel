@@ -1,6 +1,8 @@
 ﻿using Richasy.Controls.Reader.Models;
 using System;
+using System.Diagnostics;
 using System.Numerics;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Composition;
 using Windows.UI.Composition.Interactions;
@@ -66,23 +68,56 @@ namespace Richasy.Controls.Reader.Views
         {
             if (index < 0) return;
             var temp = _displayBlock.GetPositionFromPoint(new Point(0, 0));
-            _displayBlock.Select(temp,temp);
+            _displayBlock.Select(temp, temp);
+            
+            double moveOffset = _displayContainer.ActualWidth / _displayContainer.ColumnDefinitions.Count * _columns;
             if (UseAnimation)
             {
-                OffsetAnimation.InsertKeyFrame(1f, new Vector3((float)(this.ActualWidth * index), 0f, 0f));
+                OffsetAnimation.InsertKeyFrame(1f, new Vector3((float)(moveOffset * index), 0f, 0f));
                 _tracker.TryUpdatePositionWithAnimation(OffsetAnimation);
             }
             else
             {
-                _tracker.TryUpdatePosition(new Vector3((float)(this.ActualWidth * index), 0f, 0f));
+                _tracker.TryUpdatePosition(new Vector3((float)(this.ActualWidth * index)), 0f, 0f);
             }
-
+            UpdateContentLayout();
         }
 
         private void FlyoutInit()
         {
             _displayBlock.ContextFlyout = ReaderFlyout;
             _displayBlock.SelectionFlyout = null;
+        }
+
+        /// <summary>
+        /// 重新填充显示的内容
+        /// </summary>
+        /// <param name="index"></param>
+        internal void UpdateContentLayout()
+        {
+            int startIndex = Index * _columns;
+            if (startIndex > _tempOverflowList.Count)
+                NextPageSelected?.Invoke(this, EventArgs.Empty);
+            else
+            {
+                for (int i = 1; i < startIndex + _columns; i++)
+                {
+                    if (i < 0)
+                        continue;
+                    else if (i > _tempOverflowList.Count - 1)
+                        break;
+                    try
+                    {
+                        if (!_tempOverflowList[i].Item1)
+                        {
+                            _displayContainer.Children.Add(_tempOverflowList[i].Item2);
+                            Grid.SetColumn(_tempOverflowList[i].Item2, i);
+                        }   
+                    }
+                    catch (Exception)
+                    { }
+                }
+            }
         }
         #endregion Private Method
 
@@ -124,87 +159,75 @@ namespace Richasy.Controls.Reader.Views
 
         public void Previous()
         {
-            if (IndexWaiter.IsEnabled)
-            {
-                IsCoreSelectedChanged = true;
-                Index--;
-                if (Index < 0) Index = 0;
-                GoToIndex(Index);
-                IsCoreSelectedChanged = false;
-            }
+            IsCoreSelectedChanged = true;
+            Index--;
+            if (Index < 0) Index = 0;
+            GoToIndex(Index);
+            IsCoreSelectedChanged = false;
         }
 
         public void Next()
         {
-            if (IndexWaiter.IsEnabled)
-            {
-                IsCoreSelectedChanged = true;
-                Index++;
-                if (Index > Count - 1) Index = Count - 1;
-                GoToIndex(Index);
-                IsCoreSelectedChanged = false;
-            }
+            IsCoreSelectedChanged = true;
+            Index++;
+            if (Index > Count - 1) Index = Count - 1;
+            GoToIndex(Index);
+            IsCoreSelectedChanged = false;
         }
 
         private void _PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
-            if (IndexWaiter.IsEnabled)
+            IsCoreSelectedChanged = true;
+            if (e.GetCurrentPoint(this).Properties.MouseWheelDelta > 0)
             {
-                IsCoreSelectedChanged = true;
-                if (e.GetCurrentPoint(this).Properties.MouseWheelDelta > 0)
-                {
-                    Index--;
-                    if (Index < 0) Index = 0;
-                }
-                else
-                {
-                    Index++;
-                    if (Index > Count - 1) Index = Count - 1;
-                }
-                GoToIndex(Index);
-                IsCoreSelectedChanged = false;
+                Index--;
+                if (Index < 0) Index = 0;
             }
+            else
+            {
+                Index++;
+                if (Index > Count - 1) Index = Count - 1;
+            }
+            GoToIndex(Index);
+            IsCoreSelectedChanged = false;
         }
 
         private void _PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (IndexWaiter.IsEnabled)
+            if (_source != null)
             {
-                if (_source != null)
+                var pointer = e.GetCurrentPoint(this);
+                if (pointer.Properties.IsLeftButtonPressed)
                 {
-                    var pointer = e.GetCurrentPoint(this);
-                    if (pointer.Properties.IsLeftButtonPressed)
+                    foreach (var item in _displayContainer.Children)
                     {
-                        foreach (var item in _displayContainer.Children)
+                        if (item is RichTextBlock rtb)
                         {
-                            if (item is RichTextBlock rtb)
+                            if (!string.IsNullOrEmpty(rtb.SelectedText))
                             {
-                                if (!string.IsNullOrEmpty(rtb.SelectedText))
-                                {
-                                    var temp = rtb.GetPositionFromPoint(new Point(0, 0));
-                                    rtb.Select(temp, temp);
-                                }
+                                var temp = rtb.GetPositionFromPoint(new Point(0, 0));
+                                rtb.Select(temp, temp);
                             }
                         }
                     }
+                }
 
-                    if (pointer.PointerDevice.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Pen || pointer.PointerDevice.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Touch)
+                if (pointer.PointerDevice.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Pen || pointer.PointerDevice.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Touch)
+                {
+                    try
                     {
-                        try
-                        {
-                            _source.TryRedirectForManipulation(pointer);
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine(ex);
-                        }
+                        _source.TryRedirectForManipulation(pointer);
                     }
-                    else
+                    catch (Exception ex)
                     {
+                        Debug.WriteLine(ex);
+                    }
+                }
+                else
+                {
 
-                        this.CapturePointer(e.Pointer);
-                        _gestureRecognizer.ProcessDownEvent(pointer);
-                    }
+                    this.CapturePointer(e.Pointer);
+                    _gestureRecognizer.ProcessDownEvent(pointer);
                 }
             }
         }
@@ -319,7 +342,7 @@ namespace Richasy.Controls.Reader.Views
         private void _TouchHolding(object sender, HoldingRoutedEventArgs e)
         {
             e.Handled = true;
-            
+
             if (e.PointerDeviceType != Windows.Devices.Input.PointerDeviceType.Mouse)
             {
                 var position = e.GetPosition(this);
@@ -329,7 +352,7 @@ namespace Richasy.Controls.Reader.Views
 
         private void _TouchTapped(object sender, TappedRoutedEventArgs e)
         {
-            if(e.PointerDeviceType != Windows.Devices.Input.PointerDeviceType.Mouse)
+            if (e.PointerDeviceType != Windows.Devices.Input.PointerDeviceType.Mouse)
             {
                 e.Handled = true;
                 var position = e.GetPosition(this);

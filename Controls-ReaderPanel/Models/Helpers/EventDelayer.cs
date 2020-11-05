@@ -18,7 +18,7 @@ namespace Richasy.Controls.Reader.Models
             Interval = interval;
         }
 
-        public EventDelayer() : this(0.1)
+        public EventDelayer() : this(0.2)
         {
         }
 
@@ -57,6 +57,7 @@ namespace Richasy.Controls.Reader.Models
         }
 
         public event EventHandler Arrived;
+        public event EventHandler LayoutUpdate;
         protected void OnArrived()
         {
             Arrived?.Invoke(this, EventArgs.Empty);

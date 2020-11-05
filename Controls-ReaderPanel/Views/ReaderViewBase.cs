@@ -1,6 +1,7 @@
 ﻿using Richasy.Controls.Reader.Enums;
 using Richasy.Controls.Reader.Models;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.UI.Composition.Interactions;
 using Windows.UI.Input;
@@ -39,9 +40,8 @@ namespace Richasy.Controls.Reader.Views
             this.AddHandler(UIElement.HoldingEvent, TouchHoldingEventHandler, true);
             this.SizeChanged += ReaderViewBase_SizeChanged;
 
-
-            IndexWaiter = new EventWaiter();
             CreateContentDelayer = new EventDelayer();
+            _tempOverflowList = new List<Tuple<bool, FrameworkElement>>();
             CreateContentDelayer.ResetWhenDelayed = true;
             CreateContentDelayer.Arrived += CreateContentWaiter_Arrived;
         }
@@ -80,7 +80,7 @@ namespace Richasy.Controls.Reader.Views
             }
             if (startLength != 0)
             {
-                int childrenCount = _displayContainer.Children.Count;
+                int childrenCount = _tempOverflowList.Count;
                 var signNumber = Content.Length / childrenCount;
                 index = Convert.ToInt32(Math.Floor(startLength / (signNumber * 1.0)));
                 index = Convert.ToInt32(Math.Round(index / (_columns * 1.0)));
@@ -94,7 +94,7 @@ namespace Richasy.Controls.Reader.Views
 
         protected virtual async Task CreateContent() { }
 
-        public virtual void UpdateStyle(ReaderStyle style = null){}
+        public virtual void UpdateStyle(ReaderStyle style = null) { }
 
         protected virtual async Task RenderContent(string content) { }
 

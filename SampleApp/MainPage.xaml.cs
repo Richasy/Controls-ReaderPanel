@@ -1,4 +1,5 @@
-﻿using Richasy.Controls.Reader.Models;
+﻿using Newtonsoft.Json;
+using Richasy.Controls.Reader.Models;
 using Richasy.Controls.Reader.Models.Epub;
 using Richasy.Helper.UWP;
 using System;
@@ -24,6 +25,7 @@ namespace SampleApp
     public sealed partial class MainPage : Page
     {
         public ObservableCollection<Chapter> ChapterCollection = new ObservableCollection<Chapter>();
+        private Instance instance = new Instance("Reader");
         public MainPage()
         {
             this.InitializeComponent();
@@ -41,13 +43,26 @@ namespace SampleApp
             LoadingRing.IsActive = true;
         }
 
-        private void Reader_OpenCompleted(object sender, EventArgs e)
+        private async void Reader_OpenCompleted(object sender, EventArgs e)
         {
+            try
+            {
+                var history = JsonConvert.DeserializeObject<History>(instance.App.GetLocalSetting(Settings.History, "{}"));
+                if (history?.Chapter != null)
+                    Reader.LoadHistory(history);
+            }
+            catch (Exception ex)
+            {
+                await new MessageDialog(ex.Message).ShowAsync();
+            }
+            
             LoadingRing.IsActive = false;
         }
 
         private void Reader_ProgressChanged(object sender, History e)
         {
+            if (e != null)
+                instance.App.WriteLocalSetting(Settings.History, JsonConvert.SerializeObject(e));
             ProgressBlock.Text = Math.Ceiling(e.Progress) + "%";
         }
 
@@ -68,7 +83,7 @@ namespace SampleApp
 
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
-            var instance = new Instance();
+
             var file = await instance.IO.OpenLocalFileAsync(".epub", ".txt");
             if (file != null)
             {
@@ -84,6 +99,7 @@ namespace SampleApp
                     {
                         await Reader.OpenAsync(file, new TxtViewStyle());
                     }
+                    
                 }
                 catch (Exception ex)
                 {
@@ -92,7 +108,7 @@ namespace SampleApp
                     FileButton.Visibility = Visibility.Visible;
                     LoadingRing.IsActive = false;
                 }
-                
+
             }
         }
 
@@ -127,12 +143,17 @@ namespace SampleApp
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             var level = (int)value;
-            return new Thickness((level-1) * 20, 0, 0, 0);
+            return new Thickness((level - 1) * 20, 0, 0, 0);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
             throw new NotImplementedException();
         }
+    }
+
+    public enum Settings
+    {
+        History
     }
 }

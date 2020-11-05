@@ -42,22 +42,15 @@ namespace Richasy.Controls.Reader.Views
 
         private async void CreateContentWaiter_Arrived(object sender, EventArgs e)
         {
-            if(!_isSizeChangeLoaded)
+            await CreateContent();
+            IsCoreSelectedChanged = true;
+            if (Index > Count - 1)
             {
-                _isSizeChangeLoaded = true;
-                return;
+                Index = Convert.ToInt32(Math.Floor((Count - 1) / 2.0));
             }
-            else
-            {
-                await CreateContent();
-                IsCoreSelectedChanged = true;
-                if (Index > Count - 1)
-                {
-                    Index = Convert.ToInt32(Math.Floor((Count - 1) / 2.0));
-                }
-                GoToIndex(Index, false);
-                IsCoreSelectedChanged = false;
-            }
+            GoToIndex(Index, false);
+            IsCoreSelectedChanged = false;
+            _isSizeChangeLoaded = true;
         }
 
         

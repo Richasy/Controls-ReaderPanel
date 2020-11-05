@@ -1,4 +1,6 @@
 ﻿using Richasy.Controls.Reader.Models;
+using System;
+using System.Collections.Generic;
 using Windows.UI.Composition;
 using Windows.UI.Composition.Interactions;
 using Windows.UI.Input;
@@ -20,10 +22,11 @@ namespace Richasy.Controls.Reader.Views
         internal int _columns = 1;
         internal bool IsCoreSelectedChanged;
         internal bool IsAnimating;
-        internal EventWaiter IndexWaiter;
         internal EventDelayer CreateContentDelayer;
 
         internal bool _isSizeChangeLoaded = false;
+
+        internal List<Tuple<bool,FrameworkElement>> _tempOverflowList;
 
         internal double ParentWidth
         {

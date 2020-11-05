@@ -15,7 +15,7 @@ namespace Richasy.Controls.Reader.Views
     [TemplatePart(Name = "TxtBlock", Type = typeof(RichTextBlock))]
     public partial class TxtView : ReaderViewBase
     {
-        public TxtView():base()
+        public TxtView() : base()
         {
             this.DefaultStyleKey = typeof(TxtView);
         }
@@ -41,7 +41,7 @@ namespace Richasy.Controls.Reader.Views
             }
             _displayBlock.Blocks.Clear();
 
-            double singleWidth = ParentWidth / _columns;
+            double singleWidth = ParentWidth / (_columns * 1.0);
             double singleHeight = _displayContainer.ActualHeight;
             double actualWidth = singleWidth - ViewStyle.Padding.Left - ViewStyle.Padding.Right;
             double actualHeight = singleHeight - ViewStyle.Padding.Top - ViewStyle.Padding.Bottom;
@@ -56,18 +56,20 @@ namespace Richasy.Controls.Reader.Views
 
             FrameworkElement renderTarget = _displayBlock;
             bool hasOverflow = _displayBlock.HasOverflowContent;
+            _tempOverflowList.Clear();
+            _tempOverflowList.Add(new Tuple<bool, FrameworkElement>(true, _displayBlock));
 
             while (hasOverflow)
             {
                 var tmp = RenderOverflow(renderTarget);
                 tmp.Width = actualWidth;
+                tmp.Height = actualHeight;
                 _displayContainer.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(singleWidth) });
                 count++;
-                _displayContainer.Children.Add(tmp);
-                Grid.SetColumn(tmp, _displayContainer.ColumnDefinitions.Count - 1);
 
-                tmp.Height = actualHeight;
                 tmp.Measure(new Size(singleWidth, singleHeight));
+                _tempOverflowList.Add(new Tuple<bool, FrameworkElement>(false, tmp));
+
                 renderTarget = tmp;
                 hasOverflow = tmp.HasOverflowContent;
             }
@@ -111,7 +113,7 @@ namespace Richasy.Controls.Reader.Views
                     {
                         title.FontSize = style.HeaderFontSize;
                         title.Margin = style.HeaderMargin;
-                    }   
+                    }
                 }
                 else if (item is RichTextBlockOverflow of)
                 {
@@ -138,7 +140,7 @@ namespace Richasy.Controls.Reader.Views
                     var paragraph = new Paragraph();
                     paragraph.Inlines.Add(run);
                     paragraph.TextIndent = ViewStyle.FontSize * ViewStyle.TextIndent;
-                    paragraph.Margin= new Thickness(0, 0, 0, ViewStyle.SegmentSpacing);
+                    paragraph.Margin = new Thickness(0, 0, 0, ViewStyle.SegmentSpacing);
                     return paragraph;
                 }
                 return null;
