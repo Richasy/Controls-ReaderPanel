@@ -128,7 +128,6 @@ Generally speaking, only a limited number of text encodings are provided in UWP.
 1. Currently does not support more e-book formats
 2. Text annotation is not supported temporarily
 3. Voice reading is not supported temporarily
-4. When adjusting the size of the control, there may be problems that cannot respond to the rearrangement in time.s
 
 ## Thanks
 
