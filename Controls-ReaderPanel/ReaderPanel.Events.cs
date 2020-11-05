@@ -102,7 +102,7 @@ namespace Richasy.Controls.Reader
 
         private void RaiseProgressChanged(int addonLength)
         {
-            if (Chapters.Count == 0)
+            if (Chapters.Count == 0 || addonLength < 0)
                 return;
 
             double progress = 0;

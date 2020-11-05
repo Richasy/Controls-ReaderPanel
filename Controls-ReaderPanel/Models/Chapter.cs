@@ -78,13 +78,17 @@ namespace Richasy.Controls.Reader.Models
 
         public override bool Equals(object obj)
         {
-            return obj is Chapter info &&
-                   Index == info.Index;
+            return obj is Chapter chapter &&
+                   Index == chapter.Index &&
+                   Title == chapter.Title;
         }
 
         public override int GetHashCode()
         {
-            return -1590218067 + EqualityComparer<int>.Default.GetHashCode(Index);
+            int hashCode = -1516944724;
+            hashCode = hashCode * -1521134295 + Index.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Title);
+            return hashCode;
         }
     }
 }

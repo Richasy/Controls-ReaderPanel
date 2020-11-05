@@ -111,7 +111,7 @@ namespace Richasy.Controls.Reader
         /// <param name="history">阅读历史</param>
         public void LoadHistory(History history)
         {
-            SetProgress(history.Chapter, history.Start - history.Chapter.StartLength);
+            SetProgress(history.Chapter, history.Start);
         }
 
         /// <summary>
