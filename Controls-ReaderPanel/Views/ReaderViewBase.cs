@@ -1,8 +1,10 @@
 ﻿using Richasy.Controls.Reader.Enums;
 using Richasy.Controls.Reader.Models;
+using Richasy.Controls.Reader.Models.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Windows.Foundation;
 using Windows.UI.Composition.Interactions;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
@@ -41,7 +43,7 @@ namespace Richasy.Controls.Reader.Views
             this.SizeChanged += ReaderViewBase_SizeChanged;
 
             CreateContentDelayer = new EventDelayer();
-            _tempOverflowList = new List<Tuple<bool, FrameworkElement>>();
+            _tempOverflowList = new List<RenderOverflow>();
             CreateContentDelayer.ResetWhenDelayed = true;
             CreateContentDelayer.Arrived += CreateContentWaiter_Arrived;
         }
@@ -92,7 +94,55 @@ namespace Richasy.Controls.Reader.Views
             LoadingStatusChanged?.Invoke(this, LoadingStatus.Completed);
         }
 
-        protected virtual async Task CreateContent() { }
+        protected virtual async Task CreateContent()
+        {
+            int count = 0;
+            _displayContainer.ColumnDefinitions.Clear();
+            if (_displayContainer.Children.Count > 1)
+            {
+                for (int i = _displayContainer.Children.Count - 1; i > 0; i--)
+                {
+                    _displayContainer.Children.RemoveAt(i);
+                }
+            }
+            _displayBlock.Blocks.Clear();
+
+            double singleWidth = ParentWidth / (_columns * 1.0);
+            double singleHeight = _displayContainer.ActualHeight;
+            double actualWidth = singleWidth - ViewStyle.Padding.Left - ViewStyle.Padding.Right;
+            double actualHeight = singleHeight - ViewStyle.Padding.Top - ViewStyle.Padding.Bottom;
+            _displayContainer.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(singleWidth) });
+
+            await RenderContent(_content);
+            count++;
+
+            _displayBlock.Width = actualWidth;
+            _displayBlock.Height = actualHeight;
+            _displayBlock.Measure(new Size(_displayContainer.ActualWidth, _displayContainer.ActualHeight));
+
+            FrameworkElement renderTarget = _displayBlock;
+            bool hasOverflow = _displayBlock.HasOverflowContent;
+            _tempOverflowList.Clear();
+            _tempOverflowList.Add(new RenderOverflow(true, _displayBlock));
+
+            while (hasOverflow)
+            {
+                var tmp = RenderOverflow(renderTarget);
+                tmp.Width = actualWidth;
+                tmp.Height = actualHeight;
+                _displayContainer.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(singleWidth) });
+                count++;
+
+                tmp.Measure(new Size(singleWidth, singleHeight));
+                _tempOverflowList.Add(new RenderOverflow(false, tmp));
+
+                renderTarget = tmp;
+                hasOverflow = tmp.HasOverflowContent;
+            }
+
+            Count = Convert.ToInt32(Math.Ceiling(count / (_columns * 1.0)));
+            UpdateStyle();
+        }
 
         public virtual void UpdateStyle(ReaderStyle style = null) { }
 

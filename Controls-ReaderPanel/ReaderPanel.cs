@@ -67,7 +67,12 @@ namespace Richasy.Controls.Reader
                         _txtView.ProgressChanged += OnProgressChanged;
                         _txtView.TouchHolding += OnTouchHolding;
                         _txtView.TouchTapped += (_s, _e) => { TouchTapped?.Invoke(_s, _e); };
-                        _txtView.Loaded += (_s, _e) => { _txtView.SingleColumnMaxWidth = SingleColumnMaxWidth; _txtView.ReaderFlyout = ReaderFlyout; };
+                        _txtView.Loaded += (_s, _e) => 
+                        { 
+                            _txtView.SingleColumnMaxWidth = SingleColumnMaxWidth; 
+                            _txtView.ReaderFlyout = ReaderFlyout;
+                            ViewLoaded?.Invoke(this, EventArgs.Empty);
+                        };
                     }
                     _mainPresenter.Content = _txtView;
                 }
@@ -93,7 +98,12 @@ namespace Richasy.Controls.Reader
                         _epubView.ProgressChanged += OnProgressChanged;
                         _epubView.TouchHolding += OnTouchHolding;
                         _epubView.TouchTapped += (_s, _e) => { TouchTapped?.Invoke(_s, _e); };
-                        _epubView.Loaded += (_s, _e) => { _epubView.SingleColumnMaxWidth = SingleColumnMaxWidth; _epubView.ReaderFlyout = ReaderFlyout; };
+                        _epubView.Loaded += (_s, _e) => 
+                        { 
+                            _epubView.SingleColumnMaxWidth = SingleColumnMaxWidth; 
+                            _epubView.ReaderFlyout = ReaderFlyout;
+                            ViewLoaded?.Invoke(this, EventArgs.Empty);
+                        };
                         _epubView.LinkTapped += (_s, _e) => { LinkTapped?.Invoke(this, _e); };
                         _epubView.ImageTapped += (_s, _e) => { ImageTapped?.Invoke(this, _e); };
                     }
@@ -135,6 +145,28 @@ namespace Richasy.Controls.Reader
             var view = _mainPresenter.Content as ReaderViewBase;
             if (view != null)
                 view.UpdateStyle(style);
+        }
+
+        /// <summary>
+        /// 阅读器翻页（下一页）
+        /// </summary>
+        public void Next()
+        {
+            var display = _mainPresenter.Content as ReaderViewBase;
+            if (display == null)
+                throw new InvalidOperationException("Reader not loaded or no open book");
+            display.Next();
+        }
+
+        /// <summary>
+        /// 阅读器翻页（上一页）
+        /// </summary>
+        public void Previous()
+        {
+            var display = _mainPresenter.Content as ReaderViewBase;
+            if (display == null)
+                throw new InvalidOperationException("Reader not loaded or no open book");
+            display.Previous();
         }
     }
 }

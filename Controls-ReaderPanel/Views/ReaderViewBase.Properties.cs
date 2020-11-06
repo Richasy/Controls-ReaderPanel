@@ -39,14 +39,6 @@ namespace Richasy.Controls.Reader.Views
                     {
                         int currentOverflowIndex = sender._columns * index;
                         int length = 0;
-                        //if (currentOverflowIndex > sender._tempOverflowList.Count)
-                        //    length = sender._displayBlock.ContentEnd.Offset;
-                        //else
-                        //{
-                        //    var item = sender._tempOverflowList[currentOverflowIndex];
-                        //    if (item.Item2 is RichTextBlockOverflow of)
-                        //        length = of.ContentStart.Offset;
-                        //}
                         length = Convert.ToInt32(sender._content.Length * (currentOverflowIndex / (sender._tempOverflowList.Count * 1.0)));
                         sender._startTextIndex = length;
                     }

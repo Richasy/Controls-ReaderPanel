@@ -1,4 +1,5 @@
 ﻿using Richasy.Controls.Reader.Models;
+using Richasy.Controls.Reader.Models.Helpers;
 using System;
 using System.Collections.Generic;
 using Windows.UI.Composition;
@@ -17,7 +18,7 @@ namespace Richasy.Controls.Reader.Views
         internal Grid _displayContainer;
 
         internal int _startTextIndex = 0;
-        internal string _content;
+        internal string _content = "";
         internal double _startX = 0;
         internal int _columns = 1;
         internal bool IsCoreSelectedChanged;
@@ -26,7 +27,7 @@ namespace Richasy.Controls.Reader.Views
 
         internal bool _isSizeChangeLoaded = false;
 
-        internal List<Tuple<bool,FrameworkElement>> _tempOverflowList;
+        internal List<RenderOverflow> _tempOverflowList;
 
         internal double ParentWidth
         {

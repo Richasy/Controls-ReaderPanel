@@ -28,56 +28,6 @@ namespace Richasy.Controls.Reader.Views
             base.OnApplyTemplate();
         }
 
-        protected override async Task CreateContent()
-        {
-            int count = 0;
-            _displayContainer.ColumnDefinitions.Clear();
-            if (_displayContainer.Children.Count > 1)
-            {
-                for (int i = _displayContainer.Children.Count - 1; i > 0; i--)
-                {
-                    _displayContainer.Children.RemoveAt(i);
-                }
-            }
-            _displayBlock.Blocks.Clear();
-
-            double singleWidth = ParentWidth / (_columns * 1.0);
-            double singleHeight = _displayContainer.ActualHeight;
-            double actualWidth = singleWidth - ViewStyle.Padding.Left - ViewStyle.Padding.Right;
-            double actualHeight = singleHeight - ViewStyle.Padding.Top - ViewStyle.Padding.Bottom;
-            _displayContainer.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(singleWidth) });
-
-            await RenderContent(_content);
-            count++;
-
-            _displayBlock.Width = actualWidth;
-            _displayBlock.Height = actualHeight;
-            _displayBlock.Measure(new Size(_displayContainer.ActualWidth, _displayContainer.ActualHeight));
-
-            FrameworkElement renderTarget = _displayBlock;
-            bool hasOverflow = _displayBlock.HasOverflowContent;
-            _tempOverflowList.Clear();
-            _tempOverflowList.Add(new Tuple<bool, FrameworkElement>(true, _displayBlock));
-
-            while (hasOverflow)
-            {
-                var tmp = RenderOverflow(renderTarget);
-                tmp.Width = actualWidth;
-                tmp.Height = actualHeight;
-                _displayContainer.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(singleWidth) });
-                count++;
-
-                tmp.Measure(new Size(singleWidth, singleHeight));
-                _tempOverflowList.Add(new Tuple<bool, FrameworkElement>(false, tmp));
-
-                renderTarget = tmp;
-                hasOverflow = tmp.HasOverflowContent;
-            }
-
-            Count = Convert.ToInt32(Math.Ceiling(count / (_columns * 1.0)));
-            UpdateStyle();
-        }
-
         public override void UpdateStyle(ReaderStyle inputStyle = null)
         {
             if (inputStyle != null)

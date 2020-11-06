@@ -34,6 +34,8 @@ namespace Richasy.Controls.Reader.Models
         private HtmlDocument HtmlDocument = new HtmlDocument();
         private List<EpubByteFile> Images;
 
+        public string TotalInnerText { get; private set; }
+
 
         public HtmlHelper(List<EpubByteFile> images, EpubViewStyle style)
         {
@@ -46,6 +48,7 @@ namespace Richasy.Controls.Reader.Models
             HtmlContent = GetBodyString(html);
             RenderBlocks = new List<Block>();
             HtmlDocument.LoadHtml(HtmlContent);
+            TotalInnerText = HtmlDocument.DocumentNode.InnerText;
 
             foreach (HtmlNode img in HtmlDocument.DocumentNode.Descendants("img"))
             {

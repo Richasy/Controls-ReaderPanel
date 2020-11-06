@@ -44,6 +44,8 @@
                                 SetContentCompleted="Reader_SetContentCompleted"
                                 ImageTapped="Reader_ImageTapped"
                                 LinkTapped="Reader_LinkTapped"
+                                ViewLoaded="Reader_ViewLoaded"
+                                KeyDown="Reader_KeyDown"
                             Grid.Column="1">
                 <reader:ReaderPanel.Header>
                     <TextBlock Style="{StaticResource BaseTextBlockStyle}"

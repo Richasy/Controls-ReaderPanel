@@ -108,10 +108,11 @@ namespace Richasy.Controls.Reader.Views
                         break;
                     try
                     {
-                        if (!_tempOverflowList[i].Item1)
+                        if (!_tempOverflowList[i].IsRendered)
                         {
-                            _displayContainer.Children.Add(_tempOverflowList[i].Item2);
-                            Grid.SetColumn(_tempOverflowList[i].Item2, i);
+                            _displayContainer.Children.Add(_tempOverflowList[i].Element);
+                            Grid.SetColumn(_tempOverflowList[i].Element, i);
+                            _tempOverflowList[i].IsRendered = true;
                         }   
                     }
                     catch (Exception)

@@ -22,6 +22,7 @@ namespace Richasy.Controls.Reader
         public event EventHandler<PositionEventArgs> TouchTapped;
         public event EventHandler<LinkEventArgs> LinkTapped;
         public event EventHandler<ImageEventArgs> ImageTapped;
+        public event EventHandler ViewLoaded;
 
         public void OnPrevPageSelected(object sender, EventArgs args)
         {

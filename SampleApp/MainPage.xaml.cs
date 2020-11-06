@@ -45,16 +45,7 @@ namespace SampleApp
 
         private async void Reader_OpenCompleted(object sender, EventArgs e)
         {
-            try
-            {
-                var history = JsonConvert.DeserializeObject<History>(instance.App.GetLocalSetting(Settings.History, "{}"));
-                if (history?.Chapter != null)
-                    Reader.LoadHistory(history);
-            }
-            catch (Exception ex)
-            {
-                await new MessageDialog(ex.Message).ShowAsync();
-            }
+            
             
             LoadingRing.IsActive = false;
         }
@@ -135,6 +126,28 @@ namespace SampleApp
         private async void Reader_LinkTapped(object sender, LinkEventArgs e)
         {
             await new MessageDialog(e.Id + ":" + e.FileName).ShowAsync();
+        }
+
+        private async void Reader_ViewLoaded(object sender, EventArgs e)
+        {
+            try
+            {
+                var history = JsonConvert.DeserializeObject<History>(instance.App.GetLocalSetting(Settings.History, "{}"));
+                if (history?.Chapter != null)
+                    Reader.LoadHistory(history);
+            }
+            catch (Exception ex)
+            {
+                await new MessageDialog(ex.Message).ShowAsync();
+            }
+        }
+
+        private void Reader_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Left)
+                Reader.Previous();
+            else if (e.Key == Windows.System.VirtualKey.Right)
+                Reader.Next();
         }
     }
 
