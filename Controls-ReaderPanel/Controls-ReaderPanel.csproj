@@ -164,6 +164,7 @@
     <Compile Include="Models\EventArgs\PositionEventArgs.cs" />
     <Compile Include="Models\Style\ReaderStyle.cs" />
     <Compile Include="Models\Style\TxtViewStyle.cs" />
+    <Compile Include="Models\Tip.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReaderPanel.cs" />
     <Compile Include="ReaderPanel.Events.cs" />

@@ -6,14 +6,17 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Text.RegularExpressions;
 using Windows.Storage;
+using Windows.System;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Documents;
+using Windows.UI.Xaml.Media.Imaging;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -120,12 +123,30 @@ namespace SampleApp
 
         private async void Reader_ImageTapped(object sender, ImageEventArgs e)
         {
-            await new MessageDialog(e.Base64).ShowAsync();
+            var byteArray = Convert.FromBase64String(e.Base64);
+            var stream = byteArray.AsBuffer().AsStream().AsRandomAccessStream();
+            using (stream)
+            {
+                var bitmap = new BitmapImage();
+                await bitmap.SetSourceAsync(stream);
+                // do other thing
+            }
         }
 
         private async void Reader_LinkTapped(object sender, LinkEventArgs e)
         {
-            await new MessageDialog(e.Id + ":" + e.FileName).ShowAsync();
+            if (!string.IsNullOrEmpty(e.Link))
+                await Launcher.LaunchUriAsync(new Uri(e.Link));
+            else
+            {
+                if (!string.IsNullOrEmpty(e.Id))
+                {
+                    var tip = Reader.GetSpecificIdContent(e.Id, e.FileName);
+                    await new MessageDialog(tip.Description, tip.Title).ShowAsync();
+                }
+                else if (!string.IsNullOrEmpty(e.FileName))
+                    Reader.LocateToSpecificFile(e.FileName);
+            }
         }
 
         private async void Reader_ViewLoaded(object sender, EventArgs e)

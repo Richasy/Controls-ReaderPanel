@@ -6,6 +6,7 @@ namespace Richasy.Controls.Reader.Models
     {
         public string FileName { get; set; }
         public string Id { get; set; }
+        public string Link { get; set; }
         public LinkEventArgs() { }
         public LinkEventArgs(string fileName, string id)
         {

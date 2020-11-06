@@ -86,7 +86,7 @@ namespace Richasy.Controls.Reader
                 var nextOrder = orders[_tempEpubChapterIndex];
                 next = GetLastEpubChapter(nextOrder);
                 string content = nextOrder?.TextContent ?? next.Title;
-                _epubView.SetContent(content, Enums.ReaderStartMode.First);
+                _epubView.SetContent(content, ReaderStartMode.First);
             }
 
             if (!next.Equals(CurrentChapter))

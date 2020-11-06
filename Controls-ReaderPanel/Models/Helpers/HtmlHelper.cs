@@ -320,13 +320,21 @@ namespace Richasy.Controls.Reader.Models
             if (string.IsNullOrEmpty(node.InnerText))
                 return null;
             string link = node.GetAttributeValue("href", "none");
-            var sp = link.Split('#', StringSplitOptions.RemoveEmptyEntries);
             var args = new LinkEventArgs();
-            if (sp.Length > 1)
-                args.FileName = sp[0];
-            args.Id = sp.Last();
-            if (link.IndexOf("://") == -1)
-                link = "jump://" + link;
+            if (link.Contains('#'))
+            {
+                var sp = link.Split('#', StringSplitOptions.RemoveEmptyEntries);
+                if (sp.Length > 1)
+                    args.FileName = sp[0];
+                args.Id = sp.Last();
+            }
+            else if (link.Contains(".html") && !link.Contains("://"))
+            {
+                string name = link.Split('/').Last();
+                args.FileName = name;
+            }
+            else
+                args.Link = link;
             var hyp = new Hyperlink();
             var run = new Run() { Text = node.InnerText };
             if (isSup)
@@ -334,12 +342,9 @@ namespace Richasy.Controls.Reader.Models
                 run.FontSize = Style.FontSize / 1.5;
             }
             hyp.Inlines.Add(run);
-            hyp.Click += async (_s, _e) =>
+            hyp.Click += (_s, _e) =>
             {
-                if (link.StartsWith("jump://") && !args.Id.Contains("html"))
-                    LinkTapped?.Invoke(_s, args);
-                else
-                    await Launcher.LaunchUriAsync(new Uri(link));
+                LinkTapped?.Invoke(_s, args);
             };
             return hyp;
         }
