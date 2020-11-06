@@ -123,6 +123,65 @@ For more usage methods, please check the **SampleApp** in the project
 
 Generally speaking, only a limited number of text encodings are provided in UWP. If you want to create a novel reader, then you need to support a wide range of text encodings. So you have to add this code in App.xaml.cs: `Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);`
 
+## How to operate Image in Epub
+
+When rendering the current chapter of the Epub book, I attached a `Tapped` event to each **Image**, you can use this to implement some "click on the picture to enlarge" or "click on the picture to save" operation.
+
+1. Add `ImageTapped` event
+
+```xml
+<reader:ReaderPanel x:Name="Reader"
+                    ImageTapped="Reader_ImageTapped">
+</reader:ReaderPanel>
+```
+
+2. Convert the Base64 in the event parameters to `BitmapImage` or the stream you need
+
+```csharp
+private async void Reader_ImageTapped(object sender, ImageEventArgs e)
+{
+    var byteArray = Convert.FromBase64String(e.Base64);
+    var stream = byteArray.AsBuffer().AsStream().AsRandomAccessStream();
+    using (stream)
+    {
+        var bitmap = new BitmapImage();
+        await bitmap.SetSourceAsync(stream);
+        // do other things...
+    }
+}
+```
+
+## How to handle `LinkTapped` events
+
+In Epub, links are mainly divided into two categories, one is internal links (such as navigating to a file or jumping to a certain position in the page), and the other is external links (pointing to a certain URL).
+
+In the parameters of the `LinkTapped` event, **FileName** refers to the corresponding file name (such as "xxx.html"), and **Id** is a position on this page (such as "position1"), you can target To find. The content in **Link** is an external link.
+
+There are several situations here:
+
+1. Only **Id**. This means it is the positioning in the current chapter.
+2. Only **FileName**. This indicates that you need to jump to a chapter.
+3. Only **Link**. This indicates that the link is an external link, you can use `Launcher.LaunchUriAsync()` to open it in the default browser.
+4. There are **FileName** and **Id** at the same time, which means that it will be located to a specific position in a chapter. Currently the control does not provide a method to handle this situation.
+
+```csharp
+private async void Reader_LinkTapped(object sender, LinkEventArgs e)
+{
+    if (!string.IsNullOrEmpty(e.Link))
+        await Launcher.LaunchUriAsync(new Uri(e.Link));
+    else
+    {
+        if (!string.IsNullOrEmpty(e.Id))
+        {
+            var tip = Reader.GetSpecificIdContent(e.Id, e.FileName);
+            await new MessageDialog(tip.Description, tip.Title).ShowAsync();
+        }
+        else if (!string.IsNullOrEmpty(e.FileName))
+            Reader.LocateToSpecificFile(e.FileName);
+    }
+}
+```
+
 ## Known issues
 
 1. Currently does not support more e-book formats
