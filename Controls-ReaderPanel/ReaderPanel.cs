@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using Richasy.Controls.Reader.Enums;
 using Richasy.Controls.Reader.Models;
 using Richasy.Controls.Reader.Models.Epub;
 using Richasy.Controls.Reader.Views;
@@ -114,6 +115,46 @@ namespace Richasy.Controls.Reader
                 _epubView.Init(_epubContent, style as EpubViewStyle);
             }
             OpenCompleted?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// 加载自定义视图（通常用于在线阅读）
+        /// </summary>
+        /// <param name="chapters">目录列表</param>
+        /// <param name="style">视图样式</param>
+        /// <param name="details">目录详情列表（其中包含单个章节的内容）</param>
+        public void LoadCustomView(List<Chapter> chapters, TxtViewStyle style, List<ChapterDetail> details = null)
+        {
+            if (chapters == null || chapters.Count == 0 || style == null)
+                throw new ArgumentNullException();
+
+            ReaderType = Enums.ReaderType.Custom;
+            Chapters = chapters;
+            if (_mainPresenter.Content == null || !(_mainPresenter.Content is TxtView))
+            {
+                if (_txtView == null)
+                {
+                    _txtView = new TxtView();
+                    _txtView.PrevPageSelected += OnPrevPageSelected;
+                    _txtView.NextPageSelected += OnNextPageSelected;
+                    _txtView.LoadingStatusChanged += OnLoad;
+                    _txtView.ProgressChanged += OnProgressChanged;
+                    _txtView.TouchHolding += OnTouchHolding;
+                    _txtView.TouchTapped += (_s, _e) => { TouchTapped?.Invoke(_s, _e); };
+                    _txtView.Loaded += (_s, _e) =>
+                    {
+                        _txtView.SingleColumnMaxWidth = SingleColumnMaxWidth;
+                        _txtView.ReaderFlyout = ReaderFlyout;
+                        ViewLoaded?.Invoke(this, EventArgs.Empty);
+                    };
+                }
+                _mainPresenter.Content = _txtView;
+            }
+            _txtView.ViewStyle = style;
+            if (details != null)
+                CustomChapterDetailList = details;
+            else
+                CustomChapterDetailList = new List<ChapterDetail>();
         }
 
         /// <summary>
@@ -248,6 +289,16 @@ namespace Richasy.Controls.Reader
                 tip.Description = desc.Trim();
             }
             return tip;
+        }
+
+        /// <summary>
+        /// 设置自定义内容
+        /// </summary>
+        /// <param name="content">文本内容</param>
+        /// <param name="mode">起始位置</param>
+        public void SetCustomContent(string content, ReaderStartMode mode)
+        {
+            _txtView.SetContent(content, mode);
         }
     }
 }

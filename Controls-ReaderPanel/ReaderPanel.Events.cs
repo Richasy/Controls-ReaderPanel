@@ -3,8 +3,6 @@ using Richasy.Controls.Reader.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 
@@ -23,6 +21,7 @@ namespace Richasy.Controls.Reader
         public event EventHandler<LinkEventArgs> LinkTapped;
         public event EventHandler<ImageEventArgs> ImageTapped;
         public event EventHandler ViewLoaded;
+        public event EventHandler<CustomRequestEventArgs> CustomContentRequest;
 
         public void OnPrevPageSelected(object sender, EventArgs args)
         {
@@ -34,10 +33,18 @@ namespace Richasy.Controls.Reader
             {
                 return;
             }
-            if (ReaderType == Enums.ReaderType.Txt)
+            if (ReaderType == ReaderType.Txt)
             {
                 string content = _txtContent.Substring(prev.StartLength, CurrentChapter.StartLength - prev.StartLength);
-                _txtView.SetContent(content, Enums.ReaderStartMode.Last);
+                _txtView.SetContent(content, ReaderStartMode.Last);
+            }
+            else if (ReaderType == ReaderType.Custom)
+            {
+                var detail = CustomChapterDetailList.Where(p => p.Index == prev.Index).FirstOrDefault();
+                if (detail != null)
+                    _txtView.SetContent(detail.Content, ReaderStartMode.First);
+                else
+                    CustomContentRequest?.Invoke(this, new CustomRequestEventArgs(ReaderStartMode.Last, prev));
             }
             else
             {
@@ -48,7 +55,7 @@ namespace Richasy.Controls.Reader
                 var prevOrder = orders[_tempEpubChapterIndex];
                 prev = GetLastEpubChapter(prevOrder);
                 string content = prevOrder?.TextContent ?? prev.Title;
-                _epubView.SetContent(content, Enums.ReaderStartMode.Last);
+                _epubView.SetContent(content, ReaderStartMode.Last);
             }
 
             if (!prev.Equals(CurrentChapter))
@@ -68,14 +75,22 @@ namespace Richasy.Controls.Reader
             {
                 return;
             }
-            if (ReaderType == Enums.ReaderType.Txt)
+            if (ReaderType == ReaderType.Txt)
             {
                 string content = string.Empty;
                 if (next.Index == Chapters.Count - 1)
                     content = _txtContent.Substring(next.StartLength);
                 else
                     content = _txtContent.Substring(next.StartLength, Chapters[next.Index + 1].StartLength - next.StartLength);
-                _txtView.SetContent(content, Enums.ReaderStartMode.First);
+                _txtView.SetContent(content, ReaderStartMode.First);
+            }
+            else if (ReaderType == ReaderType.Custom)
+            {
+                var detail = CustomChapterDetailList.Where(p => p.Index == next.Index).FirstOrDefault();
+                if (detail != null)
+                    _txtView.SetContent(detail.Content, ReaderStartMode.First);
+                else
+                    CustomContentRequest?.Invoke(this, new CustomRequestEventArgs(ReaderStartMode.First, next));
             }
             else
             {
@@ -109,10 +124,14 @@ namespace Richasy.Controls.Reader
             double progress = 0;
             if (ReaderType == ReaderType.Epub)
                 progress = (_tempEpubChapterIndex * 1.0 / _epubContent.SpecialResources.HtmlInReadingOrder.Count * 1.0) * 100.0;
+            else if (ReaderType == ReaderType.Custom)
+                progress = CurrentChapter.Index * 1.0 / Chapters.Count * 100.0;
             else
                 progress = ((CurrentChapter.StartLength + addonLength) * 1.0 / _txtContent.Length * 1.0) * 100;
             if (progress > 100)
                 progress = 100;
+            else if (progress < 0)
+                progress = 0;
             var history = new History(CurrentChapter, addonLength, progress);
             ProgressChanged?.Invoke(this, history);
         }

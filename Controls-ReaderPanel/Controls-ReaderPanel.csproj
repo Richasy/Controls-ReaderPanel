@@ -124,6 +124,8 @@
     <Compile Include="Enums\ReaderType.cs" />
     <Compile Include="Enums\ReaderStartMode.cs" />
     <Compile Include="Models\Chapter.cs" />
+    <Compile Include="Models\ChapterDetail.cs" />
+    <Compile Include="Models\EventArgs\CustomRequestEventArgs.cs" />
     <Compile Include="Models\Helpers\RenderOverflow.cs" />
     <Compile Include="Models\Style\EpubViewStyle.cs" />
     <Compile Include="Models\Epub\EpubArchive.cs" />

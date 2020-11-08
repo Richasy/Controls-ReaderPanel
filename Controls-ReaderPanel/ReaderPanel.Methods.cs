@@ -84,7 +84,7 @@ namespace Richasy.Controls.Reader
             foreach (var header in Chapters)
             {
                 var corr = orders.Where(p => p.AbsolutePath == header.Link).FirstOrDefault();
-                if(corr!=null)
+                if (corr != null)
                 {
                     int index = orders.IndexOf(corr);
                     int currentIndex = orders.IndexOf(chapter);
@@ -157,7 +157,7 @@ namespace Richasy.Controls.Reader
                     number = 1;
                 }
             }
-            
+
             return chapters;
         }
 
@@ -251,9 +251,17 @@ namespace Richasy.Controls.Reader
                     content = _txtContent.Substring(CurrentChapter.StartLength, Chapters[nextIndex].StartLength - CurrentChapter.StartLength);
                 _txtView.SetContent(content, Enums.ReaderStartMode.First, addonLength);
             }
+            else if (ReaderType == Enums.ReaderType.Custom)
+            {
+                var detail = CustomChapterDetailList.Where(p => p.Index == CurrentChapter.Index).FirstOrDefault();
+                if (detail != null)
+                    _txtView.SetContent(detail.Content, Enums.ReaderStartMode.First, addonLength);
+                else
+                    CustomContentRequest?.Invoke(this, new CustomRequestEventArgs(Enums.ReaderStartMode.First, CurrentChapter, addonLength));
+            }
             else
             {
-                var info = _epubContent.SpecialResources.HtmlInReadingOrder.Where(p=>p.AbsolutePath.Equals(chapter.Link,StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                var info = _epubContent.SpecialResources.HtmlInReadingOrder.Where(p => p.AbsolutePath.Equals(chapter.Link, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                 string content = string.Empty;
                 if (info != null)
                 {

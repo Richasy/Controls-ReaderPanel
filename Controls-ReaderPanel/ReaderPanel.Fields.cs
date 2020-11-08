@@ -51,6 +51,10 @@ namespace Richasy.Controls.Reader
         /// 阅读器类型
         /// </summary>
         public ReaderType ReaderType { get; private set; }
+        /// <summary>
+        /// 自定义分章列表
+        /// </summary>
+        public List<ChapterDetail> CustomChapterDetailList { get; set; }
 
         public string[] ChapterEndKey { get; set; }
         public string[] ChapterExtraKey { get; set; }

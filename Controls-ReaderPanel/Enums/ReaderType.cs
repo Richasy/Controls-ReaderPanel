@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Richasy.Controls.Reader.Enums
+﻿namespace Richasy.Controls.Reader.Enums
 {
     public enum ReaderType
     {
         Txt,
-        Epub
+        Epub,
+        Custom
     }
 }
