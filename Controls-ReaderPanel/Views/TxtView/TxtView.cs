@@ -33,6 +33,8 @@ namespace Richasy.Controls.Reader.Views
             if (inputStyle != null)
                 ViewStyle = inputStyle;
             var style = ViewStyle as TxtViewStyle;
+            if (style == null)
+                style = new TxtViewStyle();
             if (style.IsAcrylicBackground)
             {
                 var opacity = Convert.ToInt32(style.Background.A) / 255.0;
