@@ -48,8 +48,8 @@ namespace SampleApp
 
         private async void Reader_OpenCompleted(object sender, EventArgs e)
         {
-            
-            
+
+
             LoadingRing.IsActive = false;
         }
 
@@ -93,7 +93,7 @@ namespace SampleApp
                     {
                         await Reader.OpenAsync(file, new TxtViewStyle());
                     }
-                    
+
                 }
                 catch (Exception ex)
                 {
@@ -141,8 +141,14 @@ namespace SampleApp
             {
                 if (!string.IsNullOrEmpty(e.Id))
                 {
-                    var tip = Reader.GetSpecificIdContent(e.Id, e.FileName);
-                    await new MessageDialog(tip.Description, tip.Title).ShowAsync();
+                    var node = Reader.GetSpecificIdNode(e.Id, e.FileName);
+                    if (node.Name == "body")
+                        Reader.LocateToSpecificFile(e.FileName);
+                    else
+                    {
+                        var tip = Reader.GetSpecificIdContent(node, e.Id);
+                        await new MessageDialog(tip.Description, tip.Title).ShowAsync();
+                    }
                 }
                 else if (!string.IsNullOrEmpty(e.FileName))
                     Reader.LocateToSpecificFile(e.FileName);

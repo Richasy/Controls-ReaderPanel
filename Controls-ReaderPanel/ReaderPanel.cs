@@ -223,7 +223,7 @@ namespace Richasy.Controls.Reader
                 throw new InvalidOperationException("Epub view not loaded");
             else if (_epubContent == null)
                 throw new InvalidOperationException("Epub content not loaded");
-            else if (string.IsNullOrEmpty(fileName) || !fileName.Contains(".html", StringComparison.OrdinalIgnoreCase))
+            else if (string.IsNullOrEmpty(fileName))
                 throw new ArgumentException("Invalid file name");
 
             var orders = _epubContent.SpecialResources.HtmlInReadingOrder;
@@ -248,22 +248,18 @@ namespace Richasy.Controls.Reader
         }
 
         /// <summary>
-        /// 获取指定章节内指定ID的内容，通常是注释（EPUB）
+        /// 获取指定文件名的HTML内容
         /// </summary>
-        /// <param name="fileName">文件名（为空时指当前章节）</param>
-        /// <param name="id">ID值</param>
-        public Tip GetSpecificIdContent(string id, string fileName = "")
+        /// <param name="fileName">文件名</param>
+        /// <returns></returns>
+        public HtmlDocument GetSpecificFileDocument(string fileName = "")
         {
-            if (ReaderType != Enums.ReaderType.Epub)
+            if (ReaderType != ReaderType.Epub)
                 throw new NotSupportedException("This method can only use in epub view");
             else if (_epubView == null)
                 throw new InvalidOperationException("Epub view not loaded");
             else if (_epubContent == null)
                 throw new InvalidOperationException("Epub content not loaded");
-            else if (string.IsNullOrEmpty(id))
-                throw new ArgumentException("Invalid Id");
-            else if (!string.IsNullOrEmpty(fileName) && !fileName.Contains(".html", StringComparison.OrdinalIgnoreCase))
-                throw new ArgumentException("Invalid File name");
 
             EpubTextFile info = null;
             var orders = _epubContent.SpecialResources.HtmlInReadingOrder;
@@ -276,7 +272,17 @@ namespace Richasy.Controls.Reader
 
             var doc = new HtmlDocument();
             doc.LoadHtml(info.TextContent);
-            var node = doc.GetElementbyId(id);
+            return doc;
+        }
+
+        /// <summary>
+        /// 获取指定章节内指定ID的内容，通常是注释（EPUB）
+        /// </summary>
+        /// <param name="fileName">文件名（为空时指当前章节）</param>
+        /// <param name="id">ID值</param>
+        public Tip GetSpecificIdContent(string id, string fileName = "")
+        {
+            var node = GetSpecificIdNode(id, fileName);
             var tip = new Tip();
             tip.Id = id;
             if (node != null)
@@ -289,6 +295,42 @@ namespace Richasy.Controls.Reader
                 tip.Description = desc.Trim();
             }
             return tip;
+        }
+
+        /// <summary>
+        /// 获取指定章节内指定ID的内容，通常是注释（EPUB）
+        /// </summary>
+        /// <param name="node">包含ID在内的HTML节点</param>
+        public Tip GetSpecificIdContent(HtmlNode node, string id)
+        {
+            if (node == null)
+                throw new ArgumentNullException("Invalid node");
+            var tip = new Tip();
+            tip.Id = id;
+            if (node != null)
+            {
+                string title = node.InnerText;
+                string desc = node.ParentNode.InnerText;
+                if (!string.IsNullOrEmpty(title))
+                    desc.Replace(title, "");
+                tip.Title = title.Trim();
+                tip.Description = desc.Trim();
+            }
+            return tip;
+        }
+
+        /// <summary>
+        /// 获取指定章节内指定ID的节点
+        /// </summary>
+        /// <param name="fileName">文件名（为空时指当前章节）</param>
+        /// <param name="id">ID值</param>
+        public HtmlNode GetSpecificIdNode(string id, string fileName = "")
+        {
+            if (string.IsNullOrEmpty(id))
+                throw new ArgumentException("Invalid Id");
+            var doc = GetSpecificFileDocument(fileName);
+            var node = doc.GetElementbyId(id);
+            return node;
         }
 
         /// <summary>

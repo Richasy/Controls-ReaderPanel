@@ -329,7 +329,7 @@ namespace Richasy.Controls.Reader.Models
                     args.FileName = sp[0];
                 args.Id = sp.Last();
             }
-            else if (link.Contains(".html") && !link.Contains("://"))
+            else if (!link.Contains("://"))
             {
                 string name = link.Split('/').Last();
                 args.FileName = name;
