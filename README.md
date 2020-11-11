@@ -97,14 +97,7 @@ private async void Button_Click(object sender, RoutedEventArgs e)
     {
         try
         {
-            if (Path.GetExtension(file.Path) == ".epub")
-            {
-                await Reader.OpenAsync(file, new EpubViewStyle());
-            }
-            else
-            {
-                await Reader.OpenAsync(file, new TxtViewStyle());
-            }
+            await Reader.OpenAsync(file, new ReaderStyle());
         }
         catch (Exception ex)
         {
