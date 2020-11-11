@@ -127,7 +127,6 @@
     <Compile Include="Models\ChapterDetail.cs" />
     <Compile Include="Models\EventArgs\CustomRequestEventArgs.cs" />
     <Compile Include="Models\Helpers\RenderOverflow.cs" />
-    <Compile Include="Models\Style\EpubViewStyle.cs" />
     <Compile Include="Models\Epub\EpubArchive.cs" />
     <Compile Include="Models\Epub\EpubBook.cs" />
     <Compile Include="Models\Epub\EpubException.cs" />
@@ -165,7 +164,6 @@
     <Compile Include="Models\EventArgs\LinkEventArgs.cs" />
     <Compile Include="Models\EventArgs\PositionEventArgs.cs" />
     <Compile Include="Models\Style\ReaderStyle.cs" />
-    <Compile Include="Models\Style\TxtViewStyle.cs" />
     <Compile Include="Models\Tip.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReaderPanel.cs" />
@@ -173,15 +171,14 @@
     <Compile Include="ReaderPanel.Fields.cs" />
     <Compile Include="ReaderPanel.Methods.cs" />
     <Compile Include="ReaderPanel.Properties.cs" />
-    <Compile Include="Views\EpubView\EpubView.cs" />
-    <Compile Include="Views\EpubView\EpubView.Events.cs" />
-    <Compile Include="Views\EpubView\EpubView.Fields.cs" />
     <Compile Include="Views\ReaderViewBase.cs" />
     <Compile Include="Views\ReaderViewBase.Events.cs" />
     <Compile Include="Views\ReaderViewBase.Fields.cs" />
     <Compile Include="Views\ReaderViewBase.Methods.cs" />
     <Compile Include="Views\ReaderViewBase.Properties.cs" />
-    <Compile Include="Views\TxtView\TxtView.cs" />
+    <Compile Include="Views\ReaderView\ReaderView.cs" />
+    <Compile Include="Views\ReaderView\ReaderView.Events.cs" />
+    <Compile Include="Views\ReaderView\ReaderView.Fields.cs" />
     <EmbeddedResource Include="Properties\Controls_ReaderPanel.rd.xml" />
   </ItemGroup>
   <ItemGroup>

@@ -78,7 +78,7 @@ namespace Richasy.Controls.Reader.Views
             }
             else
             {
-                _tracker.TryUpdatePosition(new Vector3((float)(this.ActualWidth * index)), 0f, 0f);
+                _tracker.TryUpdatePosition(new Vector3((float)(ParentWidth * index)), 0f, 0f);
             }
             UpdateContentLayout();
         }

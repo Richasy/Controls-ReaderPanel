@@ -38,13 +38,13 @@ namespace Richasy.Controls.Reader
             if (ReaderType == ReaderType.Txt)
             {
                 string content = _txtContent.Substring(prev.StartLength, CurrentChapter.StartLength - prev.StartLength);
-                _txtView.SetContent(content, ReaderStartMode.Last);
+                _readerView.SetContent(content, ReaderStartMode.Last);
             }
             else if (ReaderType == ReaderType.Custom)
             {
                 var detail = CustomChapterDetailList.Where(p => p.Index == prev.Index).FirstOrDefault();
                 if (detail != null)
-                    _txtView.SetContent(detail.Content, ReaderStartMode.First);
+                    _readerView.SetContent(detail.Content, ReaderStartMode.First);
                 else
                     CustomContentRequest?.Invoke(this, new CustomRequestEventArgs(ReaderStartMode.Last, prev));
             }
@@ -57,7 +57,7 @@ namespace Richasy.Controls.Reader
                 var prevOrder = orders[_tempEpubChapterIndex];
                 prev = GetLastEpubChapter(prevOrder);
                 string content = prevOrder?.TextContent ?? prev.Title;
-                _epubView.SetContent(content, ReaderStartMode.Last);
+                _readerView.SetContent(content, ReaderStartMode.Last);
             }
 
             if (!prev.Equals(CurrentChapter))
@@ -86,13 +86,13 @@ namespace Richasy.Controls.Reader
                     content = _txtContent.Substring(next.StartLength);
                 else
                     content = _txtContent.Substring(next.StartLength, Chapters[next.Index + 1].StartLength - next.StartLength);
-                _txtView.SetContent(content, ReaderStartMode.First);
+                _readerView.SetContent(content, ReaderStartMode.First);
             }
             else if (ReaderType == ReaderType.Custom)
             {
                 var detail = CustomChapterDetailList.Where(p => p.Index == next.Index).FirstOrDefault();
                 if (detail != null)
-                    _txtView.SetContent(detail.Content, ReaderStartMode.First);
+                    _readerView.SetContent(detail.Content, ReaderStartMode.First);
                 else
                     CustomContentRequest?.Invoke(this, new CustomRequestEventArgs(ReaderStartMode.First, next));
             }
@@ -105,7 +105,7 @@ namespace Richasy.Controls.Reader
                 var nextOrder = orders[_tempEpubChapterIndex];
                 next = GetLastEpubChapter(nextOrder);
                 string content = nextOrder?.TextContent ?? next.Title;
-                _epubView.SetContent(content, ReaderStartMode.First);
+                _readerView.SetContent(content, ReaderStartMode.First);
             }
 
             if (!next.Equals(CurrentChapter))

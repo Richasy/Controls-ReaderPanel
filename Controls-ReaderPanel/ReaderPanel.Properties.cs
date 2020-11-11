@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.UI.Xaml;
+﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls.Primitives;
 
 namespace Richasy.Controls.Reader
@@ -57,12 +52,9 @@ namespace Richasy.Controls.Reader
             var instance = d as ReaderPanel;
             if (width <= 100)
                 instance.SingleColumnMaxWidth = (double)e.OldValue;
-            else
+            else if(instance._readerView != null)
             {
-                if (instance.ReaderType == Enums.ReaderType.Txt && instance._txtView != null)
-                    instance._txtView.SingleColumnMaxWidth = width;
-                else if (instance.ReaderType == Enums.ReaderType.Epub && instance._epubView != null)
-                    instance._epubView.SingleColumnMaxWidth = width;
+                instance._readerView.SingleColumnMaxWidth = width;
             }
         }
 
@@ -81,10 +73,8 @@ namespace Richasy.Controls.Reader
             if(e.NewValue is FlyoutBase flyout)
             {
                 var instance = d as ReaderPanel;
-                if (instance.ReaderType == Enums.ReaderType.Txt && instance._txtView != null)
-                    instance._txtView.ReaderFlyout = flyout;
-                else if (instance.ReaderType == Enums.ReaderType.Epub && instance._epubView != null)
-                    instance._epubView.ReaderFlyout = flyout;
+                if(instance._readerView!=null)
+                    instance._readerView.ReaderFlyout = flyout;
             }
         }
     }

@@ -41,6 +41,26 @@ namespace Richasy.Controls.Reader.Models
         /// 是否为亚克力背景（可通过Background.A调整透明度）
         /// </summary>
         public bool IsAcrylicBackground { get; set; }
+        /// <summary>
+        /// 标题大小（TXT）
+        /// </summary>
+        public double HeaderFontSize { get; set; }
+        /// <summary>
+        /// 标题边距（TXT）
+        /// </summary>
+        public Thickness HeaderMargin { get; set; }
+        /// <summary>
+        /// 列表沟宽（EPUB）
+        /// </summary>
+        public double ListGutterWidth { get; set; }
+        /// <summary>
+        /// 标题下划线颜色（EPUB）
+        /// </summary>
+        public Color HeaderLineColor { get; set; }
+        /// <summary>
+        /// 引用块边框颜色（EPUB）
+        /// </summary>
+        public Color BlockquoteBorderColor { get; set; }
 
         public ReaderStyle()
         {
@@ -53,6 +73,11 @@ namespace Richasy.Controls.Reader.Models
             SegmentSpacing = 15;
             Padding = new Thickness(40, 20, 40, 20);
             IsAcrylicBackground = false;
+            ListGutterWidth = FontSize / 2.0;
+            HeaderLineColor = Foreground;
+            BlockquoteBorderColor = Colors.Gray;
+            HeaderFontSize = FontSize * 1.6;
+            HeaderMargin = new Thickness(0, 0, 0, FontSize);
         }
 
         public ReaderStyle Copy()
@@ -67,6 +92,14 @@ namespace Richasy.Controls.Reader.Models
             style.Padding = Padding;
             style.SegmentSpacing = SegmentSpacing;
             style.IsAcrylicBackground = IsAcrylicBackground;
+
+            style.ListGutterWidth = ListGutterWidth;
+            style.HeaderLineColor = HeaderLineColor;
+            style.BlockquoteBorderColor = BlockquoteBorderColor;
+
+            style.HeaderFontSize = HeaderFontSize;
+            style.HeaderMargin = HeaderMargin;
+
             return style;
         }
     }

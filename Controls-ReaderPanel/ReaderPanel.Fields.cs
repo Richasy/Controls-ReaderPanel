@@ -2,6 +2,7 @@
 using Richasy.Controls.Reader.Models;
 using Richasy.Controls.Reader.Models.Epub;
 using Richasy.Controls.Reader.Views;
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Windows.UI.Xaml.Controls;
@@ -10,9 +11,9 @@ namespace Richasy.Controls.Reader
 {
     public partial class ReaderPanel
     {
-        private ContentPresenter _mainPresenter;
-        private TxtView _txtView;
-        private EpubView _epubView;
+        private Grid _rootGrid;
+        private Grid _contentContainer;
+        private ReaderView _readerView;
         /// <summary>
         /// 读取Txt文件时的全部文本缓存
         /// </summary>
@@ -66,11 +67,29 @@ namespace Richasy.Controls.Reader
         {
             get
             {
-                if (_mainPresenter.Content != null)
-                    return (_mainPresenter.Content as ReaderViewBase).SelectedText;
-                else
-                    return "";
+                return _readerView.SelectedText;
             }
+        }
+
+        public Func<double> RootWidth()
+        {
+            if (_rootGrid != null)
+                return () =>
+                {
+                    return _rootGrid.ActualWidth;
+                };
+            else
+                return () =>
+                {
+                    return 0;
+                };
+        }
+        public Func<double> ContentHeight()
+        {
+            return () =>
+            {
+                return _contentContainer.ActualHeight;
+            };
         }
     }
 }

@@ -7,6 +7,8 @@ namespace Richasy.Controls.Reader.Models
     {
         private DispatcherTimer _timer;
 
+        public bool IsPause { get; set; }
+
         public EventDelayer(double seconds) : this(TimeSpan.FromSeconds(seconds))
         {
         }
@@ -57,10 +59,10 @@ namespace Richasy.Controls.Reader.Models
         }
 
         public event EventHandler Arrived;
-        public event EventHandler LayoutUpdate;
         protected void OnArrived()
         {
-            Arrived?.Invoke(this, EventArgs.Empty);
+            if(!IsPause)
+                Arrived?.Invoke(this, EventArgs.Empty);
         }
 
     }

@@ -8,14 +8,16 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:ReaderPanel">
-                    <Grid>
+                    <Grid x:Name="RootGrid">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <ContentPresenter x:Name="HeaderPresenter" Content="{TemplateBinding Header}"/>
-                        <ContentPresenter x:Name="MainPresenter" Content="{TemplateBinding Content}" Grid.Row="1"/>
+                        <Grid Grid.Row="1" x:Name="ContentContainer">
+                            <view:ReaderView x:Name="ReaderView"/>
+                        </Grid>
                         <ContentPresenter x:Name="FooterPresenter" Content="{TemplateBinding Footer}" Grid.Row="2"/>
                     </Grid>
                 </ControlTemplate>
@@ -23,32 +25,13 @@
         </Setter>
     </Style>
 
-    <Style TargetType="view:TxtView" >
+    <Style TargetType="view:ReaderViewBase" >
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="view:TxtView">
-                    <Border Background="{TemplateBinding Background}">
-                        <Grid x:Name="TxtGrid">
-                            <RichTextBlock x:Name="TxtBlock"
-                                       TextWrapping="Wrap"
-                                       IsTextSelectionEnabled="True"
-                                       ContextFlyout="{x:Null}"
-                                       SelectionFlyout="{x:Null}"
-                                       />
-                        </Grid>
-                    </Border>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style TargetType="view:EpubView" >
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="view:EpubView">
-                    <Border Background="{TemplateBinding Background}">
-                        <Grid x:Name="EpubGrid">
-                            <RichTextBlock x:Name="EpubBlock"
+                <ControlTemplate TargetType="view:ReaderViewBase">
+                    <Border Background="{TemplateBinding Background}" x:Name="DisplayBorder">
+                        <Grid x:Name="DisplayContainer">
+                            <RichTextBlock x:Name="DisplayBlock"
                                        TextWrapping="Wrap"
                                        IsTextSelectionEnabled="True"
                                        ContextFlyout="{x:Null}"

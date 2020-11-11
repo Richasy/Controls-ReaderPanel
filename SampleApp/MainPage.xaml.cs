@@ -81,25 +81,13 @@ namespace SampleApp
             var file = await instance.IO.OpenLocalFileAsync(".epub", ".txt");
             if (file != null)
             {
-                DisplayGrid.Visibility = Visibility.Visible;
-                FileButton.Visibility = Visibility.Collapsed;
                 try
                 {
-                    if (Path.GetExtension(file.Path) == ".epub")
-                    {
-                        await Reader.OpenAsync(file, new EpubViewStyle());
-                    }
-                    else
-                    {
-                        await Reader.OpenAsync(file, new TxtViewStyle());
-                    }
-
+                    await Reader.OpenAsync(file, new ReaderStyle());
                 }
                 catch (Exception ex)
                 {
                     await new MessageDialog(ex.Message).ShowAsync();
-                    DisplayGrid.Visibility = Visibility.Collapsed;
-                    FileButton.Visibility = Visibility.Visible;
                     LoadingRing.IsActive = false;
                 }
 
@@ -162,6 +150,8 @@ namespace SampleApp
                 var history = JsonConvert.DeserializeObject<History>(instance.App.GetLocalSetting(Settings.History, "{}"));
                 if (history?.Chapter != null)
                     Reader.LoadHistory(history);
+                else
+                    Reader.LoadChapter(Reader.Chapters.First());
             }
             catch (Exception ex)
             {
@@ -171,9 +161,9 @@ namespace SampleApp
 
         private void Reader_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
         {
-            if (e.Key == Windows.System.VirtualKey.Left)
+            if (e.Key == VirtualKey.Left)
                 Reader.Previous();
-            else if (e.Key == Windows.System.VirtualKey.Right)
+            else if (e.Key == VirtualKey.Right)
                 Reader.Next();
         }
     }

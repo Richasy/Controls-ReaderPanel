@@ -16,6 +16,7 @@ namespace Richasy.Controls.Reader.Views
     {
         internal RichTextBlock _displayBlock;
         internal Grid _displayContainer;
+        internal Border _displayParent;
 
         internal int _startTextIndex = 0;
         internal string _content = "";
@@ -27,11 +28,17 @@ namespace Richasy.Controls.Reader.Views
 
         internal bool _isSizeChangeLoaded = false;
 
+        public bool _isSetContent = false;
+
         internal List<RenderOverflow> _tempOverflowList;
 
-        internal double ParentWidth
+        public double ParentWidth
         {
-            get => (VisualTreeHelper.GetParent(_displayContainer) as FrameworkElement).ActualWidth;
+            get=> _displayParent.ActualWidth;
+        }
+        public double ContentHeight
+        {
+            get => _displayContainer.ActualHeight;
         }
 
         public string SelectedText

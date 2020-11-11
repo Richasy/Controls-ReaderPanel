@@ -13,6 +13,9 @@ using Windows.UI.Xaml.Input;
 
 namespace Richasy.Controls.Reader.Views
 {
+    [TemplatePart(Name = "DisplayBorder", Type = typeof(Border))]
+    [TemplatePart(Name = "DisplayContainer", Type = typeof(Grid))]
+    [TemplatePart(Name = "DisplayBlock", Type = typeof(RichTextBlock))]
     public partial class ReaderViewBase : Control, IInteractionTrackerOwner
     {
         public ReaderViewBase()
@@ -50,6 +53,9 @@ namespace Richasy.Controls.Reader.Views
 
         protected override void OnApplyTemplate()
         {
+            _displayContainer = GetTemplateChild("DisplayContainer") as Grid;
+            _displayBlock = GetTemplateChild("DisplayBlock") as RichTextBlock;
+            _displayParent = GetTemplateChild("DisplayBorder") as Border;
             FlyoutInit();
 
             SetupComposition();
@@ -96,6 +102,8 @@ namespace Richasy.Controls.Reader.Views
 
         protected virtual async Task CreateContent()
         {
+            if (ParentWidth == 0 || _displayContainer == null)
+                return;
             int count = 0;
             _displayContainer.ColumnDefinitions.Clear();
             if (_displayContainer.Children.Count > 1)
@@ -108,7 +116,7 @@ namespace Richasy.Controls.Reader.Views
             _displayBlock.Blocks.Clear();
 
             double singleWidth = ParentWidth / (_columns * 1.0);
-            double singleHeight = _displayContainer.ActualHeight;
+            double singleHeight = ContentHeight;
             double actualWidth = singleWidth - ViewStyle.Padding.Left - ViewStyle.Padding.Right;
             double actualHeight = singleHeight - ViewStyle.Padding.Top - ViewStyle.Padding.Bottom;
             _displayContainer.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(singleWidth) });
@@ -118,7 +126,7 @@ namespace Richasy.Controls.Reader.Views
 
             _displayBlock.Width = actualWidth;
             _displayBlock.Height = actualHeight;
-            _displayBlock.Measure(new Size(_displayContainer.ActualWidth, _displayContainer.ActualHeight));
+            _displayBlock.Measure(new Size(ParentWidth, ContentHeight));
 
             FrameworkElement renderTarget = _displayBlock;
             bool hasOverflow = _displayBlock.HasOverflowContent;

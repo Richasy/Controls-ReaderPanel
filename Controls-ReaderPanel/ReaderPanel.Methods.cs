@@ -251,13 +251,13 @@ namespace Richasy.Controls.Reader
                     content = _txtContent.Substring(CurrentChapter.StartLength);
                 else
                     content = _txtContent.Substring(CurrentChapter.StartLength, Chapters[nextIndex].StartLength - CurrentChapter.StartLength);
-                _txtView.SetContent(content, Enums.ReaderStartMode.First, addonLength);
+                _readerView.SetContent(content, Enums.ReaderStartMode.First, addonLength);
             }
             else if (ReaderType == Enums.ReaderType.Custom)
             {
                 var detail = CustomChapterDetailList.Where(p => p.Index == CurrentChapter.Index).FirstOrDefault();
                 if (detail != null)
-                    _txtView.SetContent(detail.Content, Enums.ReaderStartMode.First, addonLength);
+                    _readerView.SetContent(detail.Content, Enums.ReaderStartMode.First, addonLength);
                 else
                     CustomContentRequest?.Invoke(this, new CustomRequestEventArgs(Enums.ReaderStartMode.First, CurrentChapter, addonLength));
             }
@@ -272,7 +272,7 @@ namespace Richasy.Controls.Reader
                 }
                 else
                     content = chapter.Title;
-                _epubView.SetContent(content, Enums.ReaderStartMode.First, addonLength);
+                _readerView.SetContent(content, Enums.ReaderStartMode.First, addonLength);
             }
             RaiseProgressChanged(addonLength);
         }

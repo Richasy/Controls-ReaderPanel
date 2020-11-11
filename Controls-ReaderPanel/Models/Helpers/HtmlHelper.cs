@@ -24,7 +24,7 @@ namespace Richasy.Controls.Reader.Models
     internal class HtmlHelper
     {
         private string HtmlContent { get; set; }
-        private EpubViewStyle Style { get; set; }
+        private ReaderStyle Style { get; set; }
 
         public List<Block> RenderBlocks { get; private set; }
 
@@ -37,7 +37,7 @@ namespace Richasy.Controls.Reader.Models
         public string TotalInnerText { get; private set; }
 
 
-        public HtmlHelper(List<EpubByteFile> images, EpubViewStyle style)
+        public HtmlHelper(List<EpubByteFile> images, ReaderStyle style)
         {
             Images = images;
             Style = style;
