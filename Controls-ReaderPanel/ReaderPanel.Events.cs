@@ -25,6 +25,8 @@ namespace Richasy.Controls.Reader
 
         public void OnPrevPageSelected(object sender, EventArgs args)
         {
+            if (CurrentChapter == null)
+                return;
             int index = CurrentChapter.Index;
             if (index < 1 || Chapters.Count == 0 || _isLoading)
                 return;
@@ -67,6 +69,8 @@ namespace Richasy.Controls.Reader
 
         public void OnNextPageSelected(object sender, EventArgs args)
         {
+            if (CurrentChapter == null)
+                return;
             int index = CurrentChapter.Index;
             if (index >= Chapters.Count || Chapters.Count == 0 || _isLoading)
                 return;

@@ -240,6 +240,8 @@ namespace Richasy.Controls.Reader
         {
             if (Chapters == null || Chapters.Count == 0 || !Chapters.Any(p => p.Equals(chapter)))
                 throw new ArgumentOutOfRangeException("The chapter list don't have this chapter");
+            if (chapter != CurrentChapter)
+                ChapterChanged?.Invoke(this, chapter);
             CurrentChapter = Chapters.Where(p => p.Equals(chapter)).FirstOrDefault();
             if (ReaderType == Enums.ReaderType.Txt)
             {

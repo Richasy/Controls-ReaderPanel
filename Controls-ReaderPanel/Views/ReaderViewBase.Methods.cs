@@ -69,7 +69,7 @@ namespace Richasy.Controls.Reader.Views
             if (index < 0) return;
             var temp = _displayBlock.GetPositionFromPoint(new Point(0, 0));
             _displayBlock.Select(temp, temp);
-            
+
             double moveOffset = _displayContainer.ActualWidth / _displayContainer.ColumnDefinitions.Count * _columns;
             if (UseAnimation)
             {
@@ -113,7 +113,7 @@ namespace Richasy.Controls.Reader.Views
                             _displayContainer.Children.Add(_tempOverflowList[i].Element);
                             Grid.SetColumn(_tempOverflowList[i].Element, i);
                             _tempOverflowList[i].IsRendered = true;
-                        }   
+                        }
                     }
                     catch (Exception)
                     { }
@@ -347,7 +347,7 @@ namespace Richasy.Controls.Reader.Views
             if (e.PointerDeviceType != Windows.Devices.Input.PointerDeviceType.Mouse)
             {
                 var position = e.GetPosition(this);
-                TouchHolding?.Invoke(this, new PositionEventArgs(position));
+                TouchHolding?.Invoke(this, new PositionEventArgs(position, e.PointerDeviceType));
             }
         }
 
@@ -356,9 +356,9 @@ namespace Richasy.Controls.Reader.Views
             if (e.PointerDeviceType != Windows.Devices.Input.PointerDeviceType.Mouse)
             {
                 e.Handled = true;
-                var position = e.GetPosition(this);
-                TouchTapped?.Invoke(this, new PositionEventArgs(position));
             }
+            var position = e.GetPosition(this);
+            TouchTapped?.Invoke(this, new PositionEventArgs(position, e.PointerDeviceType));
         }
         #endregion
     }
