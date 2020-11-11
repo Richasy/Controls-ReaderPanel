@@ -177,7 +177,8 @@ namespace Richasy.Controls.Reader.Models
                 case "article":
                 case "header":
                 case "span":
-                    await RenderAsync(node, parent);
+                    RenderBlocks.Add(parent);
+                    await RenderAsync(node, null);
                     break;
                 case "h1":
                 case "h2":
