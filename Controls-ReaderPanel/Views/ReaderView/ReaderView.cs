@@ -16,7 +16,7 @@ namespace Richasy.Controls.Reader.Views
 {
     public partial class ReaderView : ReaderViewBase
     {
-        public ReaderView():base()
+        public ReaderView() : base()
         {
 
         }
@@ -77,7 +77,7 @@ namespace Richasy.Controls.Reader.Views
                         title.FontSize = style.HeaderFontSize;
                         title.Margin = style.HeaderMargin;
                     }
-                    rtb.Blocks.OfType<Paragraph>().ToList().ForEach(p => p.Margin = new Thickness(0, 0, 0, style.SegmentSpacing));
+                    rtb.Blocks.OfType<Paragraph>().ToList().ForEach(p => { p.Margin = new Thickness(0, 0, 0, style.SegmentSpacing); p.TextIndent = style.TextIndent * style.FontSize; });
                 }
                 else if (item is RichTextBlockOverflow of)
                 {
@@ -156,7 +156,7 @@ namespace Richasy.Controls.Reader.Views
                     rtb.Foreground = new SolidColorBrush(style.Foreground);
                     rtb.LineHeight = style.LineHeight;
                     rtb.Margin = style.Padding;
-                    rtb.Blocks.OfType<Paragraph>().ToList().ForEach(p => p.Margin = new Thickness(0, 0, 0, style.SegmentSpacing));
+                    rtb.Blocks.OfType<Paragraph>().ToList().ForEach(p => { p.Margin = new Thickness(0, 0, 0, style.SegmentSpacing); p.TextIndent = style.TextIndent * style.FontSize; });
                 }
                 else if (item is RichTextBlockOverflow of)
                 {
