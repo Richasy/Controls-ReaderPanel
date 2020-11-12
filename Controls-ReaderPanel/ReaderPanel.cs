@@ -44,7 +44,6 @@ namespace Richasy.Controls.Reader
                 _readerView.SingleColumnMaxWidth = SingleColumnMaxWidth;
                 _readerView.ReaderFlyout = ReaderFlyout;
                 ViewLoaded?.Invoke(this, EventArgs.Empty);
-                _readerView._isSetContent = false;
             };
             _readerView.LinkTapped += (_s, _e) => { LinkTapped?.Invoke(this, _e); };
             _readerView.ImageTapped += (_s, _e) => { ImageTapped?.Invoke(this, _e); };
@@ -74,7 +73,6 @@ namespace Richasy.Controls.Reader
                 ReaderType = _readerView.ReaderType = ReaderType.Txt;
                 Chapters = await GetTxtChapters(bookFile);
                 ChapterLoaded?.Invoke(this, Chapters);
-                _readerView._isSetContent = true;
                 _txtContent = await GetTxtContent(bookFile);
                 _readerView.ViewStyle = style as ReaderStyle;
             }
@@ -84,7 +82,6 @@ namespace Richasy.Controls.Reader
                 _epubContent = await EpubReader.Read(bookFile, Encoding.Default);
                 Chapters = GetEpubChapters(_epubContent);
                 ChapterLoaded?.Invoke(this, Chapters);
-                _readerView._isSetContent = true;
                 _readerView.EpubInit(_epubContent, style);
             }
 
@@ -104,7 +101,6 @@ namespace Richasy.Controls.Reader
 
             ReaderType = _readerView.ReaderType = ReaderType.Custom;
             Chapters = chapters;
-            _readerView._isSetContent = true;
             _readerView.ViewStyle = style;
             if (details != null)
                 CustomChapterDetailList = details;

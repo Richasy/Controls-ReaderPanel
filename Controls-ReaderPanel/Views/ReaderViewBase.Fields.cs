@@ -28,8 +28,6 @@ namespace Richasy.Controls.Reader.Views
 
         internal bool _isSizeChangeLoaded = false;
 
-        public bool _isSetContent = false;
-
         internal List<RenderOverflow> _tempOverflowList;
 
         public double ParentWidth

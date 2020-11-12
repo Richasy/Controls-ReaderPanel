@@ -31,15 +31,13 @@ namespace Richasy.Controls.Reader.Views
 
         private void ReaderViewBase_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (Visibility == Visibility.Visible)
-                SizeChangeHandle();
+            SizeChangeHandle();
         }
 
         public void SizeChangeHandle()
         {
             _columns = Convert.ToInt32(Math.Ceiling(ParentWidth / SingleColumnMaxWidth));
-            if (!_isSetContent)
-                CreateContentDelayer.Delay();
+            CreateContentDelayer.Delay();
         }
 
         private async void CreateContentWaiter_Arrived(object sender, EventArgs e)
