@@ -44,7 +44,7 @@ namespace Richasy.Controls.Reader
             {
                 var detail = CustomChapterDetailList.Where(p => p.Index == prev.Index).FirstOrDefault();
                 if (detail != null)
-                    _readerView.SetContent(detail.GetReadContent(), ReaderStartMode.First);
+                    _readerView.SetContent(detail.GetReadContent(), ReaderStartMode.Last);
                 else
                     CustomContentRequest?.Invoke(this, new CustomRequestEventArgs(ReaderStartMode.Last, prev));
             }
