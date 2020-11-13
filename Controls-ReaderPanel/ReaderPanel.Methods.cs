@@ -109,7 +109,7 @@ namespace Richasy.Controls.Reader
             if (book == null)
                 throw new ArgumentNullException();
             var total = await GetTxtContent(book);
-            return GetTxtChapters(total, book.DisplayName.Replace(".txt", "", StringComparison.OrdinalIgnoreCase););
+            return GetTxtChapters(total, book.DisplayName.Replace(".txt", "", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
@@ -240,10 +240,16 @@ namespace Richasy.Controls.Reader
                 stream.Seek(0, SeekOrigin.Begin);
                 var _bookReader = new StreamReader(stream, encoding);
                 bookContent = await _bookReader.ReadToEndAsync();
-                bookContent = bookContent.Replace("\r", "\n");
-                bookContent = bookContent.Replace("\n\n", "\n");
-                bookContent = bookContent.Replace("\n", Environment.NewLine);
+                bookContent = NormalizeTxtContent(bookContent);
             }
+            return bookContent;
+        }
+
+        private string NormalizeTxtContent(string bookContent)
+        {
+            bookContent = bookContent.Replace("\r", "\n");
+            bookContent = bookContent.Replace("\n\n", "\n");
+            bookContent = bookContent.Replace("\n", Environment.NewLine);
             return bookContent;
         }
 
@@ -268,7 +274,7 @@ namespace Richasy.Controls.Reader
             {
                 var detail = CustomChapterDetailList.Where(p => p.Index == CurrentChapter.Index).FirstOrDefault();
                 if (detail != null)
-                    _readerView.SetContent(detail.Content, Enums.ReaderStartMode.First, addonLength);
+                    _readerView.SetContent(detail.GetReadContent(), Enums.ReaderStartMode.First, addonLength);
                 else
                     CustomContentRequest?.Invoke(this, new CustomRequestEventArgs(Enums.ReaderStartMode.First, CurrentChapter, addonLength));
             }

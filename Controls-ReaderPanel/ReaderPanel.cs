@@ -144,14 +144,16 @@ namespace Richasy.Controls.Reader
         {
             if (chapters == null || chapters.Count == 0 || style == null)
                 throw new ArgumentNullException();
-
+            OpenStarting?.Invoke(this, EventArgs.Empty);
             ReaderType = _readerView.ReaderType = ReaderType.Custom;
             Chapters = chapters;
+            ChapterLoaded?.Invoke(this, Chapters);
             _readerView.ViewStyle = style;
             if (details != null)
                 CustomChapterDetailList = details;
             else
                 CustomChapterDetailList = new List<ChapterDetail>();
+            OpenCompleted?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -331,6 +333,17 @@ namespace Richasy.Controls.Reader
         public void SetCustomContent(string content, ReaderStartMode mode)
         {
             _readerView.SetContent(content, mode);
+        }
+
+        /// <summary>
+        /// 设置自定义章节详情
+        /// </summary>
+        /// <param name="detail">章节详情</param>
+        /// <param name="mode">起始位置</param>
+        /// <param name="addonLength">偏移值</param>
+        public void SetCustomContent(ChapterDetail detail, ReaderStartMode mode, int addonLength = 0)
+        {
+            _readerView.SetContent(detail.GetReadContent(), mode, addonLength);
         }
     }
 }

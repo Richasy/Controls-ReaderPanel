@@ -1,4 +1,6 @@
-﻿namespace Richasy.Controls.Reader.Models
+﻿using System;
+
+namespace Richasy.Controls.Reader.Models
 {
     public class ChapterDetail
     {
@@ -26,6 +28,15 @@
         public override int GetHashCode()
         {
             return -2134847229 + Index.GetHashCode();
+        }
+
+        public string GetReadContent()
+        {
+            string bookContent = Title + "\n" + Content;
+            bookContent = bookContent.Replace("\r", "\n");
+            bookContent = bookContent.Replace("\n\n", "\n");
+            bookContent = bookContent.Replace("\n", Environment.NewLine);
+            return bookContent;
         }
     }
 }
