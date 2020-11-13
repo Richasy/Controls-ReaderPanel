@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 
 namespace Richasy.Controls.Reader
 {
@@ -76,6 +77,7 @@ namespace Richasy.Controls.Reader
                 ChapterLoaded?.Invoke(this, Chapters);
             }
             _readerView.ViewStyle = style;
+            UpdateBackground(style);
             if (extension.ToLower() == ".txt")
             {
                 ReaderType = _readerView.ReaderType = ReaderType.Txt;
@@ -149,6 +151,7 @@ namespace Richasy.Controls.Reader
             Chapters = chapters;
             ChapterLoaded?.Invoke(this, Chapters);
             _readerView.ViewStyle = style;
+            UpdateBackground(style);
             if (details != null)
                 CustomChapterDetailList = details;
             else
@@ -175,12 +178,37 @@ namespace Richasy.Controls.Reader
         }
 
         /// <summary>
-        /// 更新阅读器样式（视图与样式需匹配，比如阅读Txt时需传入TxtViewStyle）
+        /// 更新阅读器样式
         /// </summary>
         /// <param name="style">阅读器样式</param>
         public void UpdateStyle(ReaderStyle style)
         {
+            UpdateBackground(style);
             _readerView.UpdateStyle(style);
+        }
+
+        /// <summary>
+        /// 更新阅读器背景
+        /// </summary>
+        /// <param name="style">阅读器样式</param>
+        public void UpdateBackground(ReaderStyle style)
+        {
+            if (style.IsAcrylicBackground)
+            {
+                var opacity = Convert.ToInt32(style.Background.A) / 255.0;
+                var tempBackground = style.Background;
+                tempBackground.A = 255;
+                var acrylic = new AcrylicBrush()
+                {
+                    TintColor = tempBackground,
+                    TintOpacity = opacity,
+                    FallbackColor = style.Background,
+                    BackgroundSource = AcrylicBackgroundSource.HostBackdrop
+                };
+                _rootGrid.Background = acrylic;
+            }
+            else
+                _rootGrid.Background = new SolidColorBrush(style.Background);
         }
 
         /// <summary>

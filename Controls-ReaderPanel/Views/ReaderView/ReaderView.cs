@@ -46,22 +46,6 @@ namespace Richasy.Controls.Reader.Views
             if (inputStyle != null)
                 ViewStyle = inputStyle;
             var style = ViewStyle;
-            if (style.IsAcrylicBackground)
-            {
-                var opacity = Convert.ToInt32(style.Background.A) / 255.0;
-                var tempBackground = style.Background;
-                tempBackground.A = 255;
-                var acrylic = new AcrylicBrush()
-                {
-                    TintColor = tempBackground,
-                    TintOpacity = opacity,
-                    FallbackColor = style.Background,
-                    BackgroundSource = AcrylicBackgroundSource.HostBackdrop
-                };
-                Background = acrylic;
-            }
-            else
-                Background = new SolidColorBrush(style.Background);
             foreach (var item in _displayContainer.Children)
             {
                 if (item is RichTextBlock rtb)
@@ -131,22 +115,6 @@ namespace Richasy.Controls.Reader.Views
             if (inputStyle != null)
                 ViewStyle = inputStyle;
             var style = ViewStyle;
-            if (style.IsAcrylicBackground)
-            {
-                var opacity = Convert.ToInt32(style.Background.A) / 255.0;
-                var tempBackground = style.Background;
-                tempBackground.A = 255;
-                var acrylic = new AcrylicBrush()
-                {
-                    TintColor = tempBackground,
-                    TintOpacity = opacity,
-                    FallbackColor = style.Background,
-                    BackgroundSource = AcrylicBackgroundSource.HostBackdrop
-                };
-                Background = acrylic;
-            }
-            else
-                Background = new SolidColorBrush(style.Background);
             foreach (var item in _displayContainer.Children)
             {
                 if (item is RichTextBlock rtb)
@@ -156,7 +124,7 @@ namespace Richasy.Controls.Reader.Views
                     rtb.Foreground = new SolidColorBrush(style.Foreground);
                     rtb.LineHeight = style.LineHeight;
                     rtb.Margin = style.Padding;
-                    rtb.Blocks.OfType<Paragraph>().Skip(1).ToList().ForEach(p => { p.Margin = new Thickness(0, style.SegmentSpacing / 2.0, 0, style.SegmentSpacing/2.0); p.TextIndent = style.TextIndent * style.FontSize; });
+                    rtb.Blocks.OfType<Paragraph>().Where(p=>p.Inlines.Count>0 && !(p.Inlines.First() is InlineUIContainer)).ToList().ForEach(p => { p.Margin = new Thickness(0, style.SegmentSpacing / 2.0, 0, style.SegmentSpacing/2.0); p.TextIndent = style.TextIndent * style.FontSize; });
                 }
                 else if (item is RichTextBlockOverflow of)
                 {

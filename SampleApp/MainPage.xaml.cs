@@ -29,6 +29,7 @@ namespace SampleApp
     {
         public ObservableCollection<Chapter> ChapterCollection = new ObservableCollection<Chapter>();
         private Instance instance = new Instance("Reader");
+        private StorageFile _localFile = null;
         public MainPage()
         {
             this.InitializeComponent();
@@ -46,10 +47,8 @@ namespace SampleApp
             LoadingRing.IsActive = true;
         }
 
-        private async void Reader_OpenCompleted(object sender, EventArgs e)
+        private void Reader_OpenCompleted(object sender, EventArgs e)
         {
-
-
             LoadingRing.IsActive = false;
         }
 
@@ -81,6 +80,7 @@ namespace SampleApp
             var file = await instance.IO.OpenLocalFileAsync(".epub", ".txt");
             if (file != null)
             {
+                _localFile = file;
                 try
                 {
                     await Reader.OpenAsync(file, new ReaderStyle());
@@ -145,6 +145,8 @@ namespace SampleApp
 
         private async void Reader_ViewLoaded(object sender, EventArgs e)
         {
+            if (_localFile == null)
+                return;
             try
             {
                 var history = JsonConvert.DeserializeObject<History>(instance.App.GetLocalSetting(Settings.History, "{}"));

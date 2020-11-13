@@ -54,12 +54,12 @@
                 <reader:ReaderPanel.Header>
                     <TextBlock Style="{StaticResource BaseTextBlockStyle}"
                            x:Name="ChapterTitleBlock" HorizontalAlignment="Center"
-                           Margin="0,10"/>
+                           Margin="0,10" Foreground="Black"/>
                 </reader:ReaderPanel.Header>
 
                 <reader:ReaderPanel.Footer>
                     <TextBlock x:Name="ProgressBlock" Style="{StaticResource BaseTextBlockStyle}"
-                           HorizontalAlignment="Center" Margin="0,10"/>
+                           HorizontalAlignment="Center" Margin="0,10" Foreground="Black"/>
                 </reader:ReaderPanel.Footer>
 
                 <reader:ReaderPanel.ReaderFlyout>
@@ -74,7 +74,7 @@
                 </reader:ReaderPanel.ReaderFlyout>
             </reader:ReaderPanel>
             <ProgressRing VerticalAlignment="Center" HorizontalAlignment="Center"
-                      Width="40" Height="40" Name="LoadingRing" Grid.Column="1" IsActive="True"
+                      Width="40" Height="40" Name="LoadingRing" Grid.Column="1"
                       />
         </Grid>
     </Grid>
