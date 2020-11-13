@@ -108,12 +108,23 @@ namespace Richasy.Controls.Reader
         {
             if (book == null)
                 throw new ArgumentNullException();
+            var total = await GetTxtContent(book);
+            return GetTxtChapters(total, book.DisplayName.Replace(".txt", "", StringComparison.OrdinalIgnoreCase););
+        }
+
+        /// <summary>
+        /// 用于对TXT文件进行分章
+        /// </summary>
+        /// <param name="total">文本内容</param>
+        /// <param name="bookTitle">书籍标题</param>
+        /// <returns></returns>
+        private List<Chapter> GetTxtChapters(string total, string bookTitle = "")
+        {
             int count = 0;
             List<Chapter> chapters = new List<Chapter>();
-            var total = await GetTxtContent(book);
             int number = 1;
             Chapter chapter = new Chapter();
-            chapter.Title = book.DisplayName.Replace(".txt", "", StringComparison.OrdinalIgnoreCase);
+            chapter.Title = bookTitle;
             chapter.Index = 0;
             chapter.StartLength = 0;
             chapters.Add(chapter);

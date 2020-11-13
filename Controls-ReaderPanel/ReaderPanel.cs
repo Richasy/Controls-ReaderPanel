@@ -56,8 +56,9 @@ namespace Richasy.Controls.Reader
         /// </summary>
         /// <param name="bookFile">书籍文件</param>
         /// <param name="style">阅读器样式</param>
+        /// <param name="chapters">外部导入的目录（通常是前一次生成的目录，以避免重复生成目录），为<c>null</c>或空列表将重新生成目录</param>
         /// <returns></returns>
-        public async Task OpenAsync(StorageFile bookFile, ReaderStyle style)
+        public async Task OpenAsync(StorageFile bookFile, ReaderStyle style, List<Chapter> chapters = null)
         {
             if (bookFile == null)
                 throw new ArgumentNullException();
@@ -68,24 +69,69 @@ namespace Richasy.Controls.Reader
                 throw new NotSupportedException("File type not support (Currently only support txt and epub file)");
             }
             OpenStarting?.Invoke(this, EventArgs.Empty);
+            bool hasExternalChapters = chapters != null && chapters.Count > 0;
+            if (hasExternalChapters)
+            {
+                Chapters = chapters;
+                ChapterLoaded?.Invoke(this, Chapters);
+            }
+            _readerView.ViewStyle = style;
             if (extension.ToLower() == ".txt")
             {
                 ReaderType = _readerView.ReaderType = ReaderType.Txt;
-                Chapters = await GetTxtChapters(bookFile);
-                ChapterLoaded?.Invoke(this, Chapters);
+                if (!hasExternalChapters)
+                {
+                    Chapters = await GetTxtChapters(bookFile);
+                    ChapterLoaded?.Invoke(this, Chapters);
+                }
                 _txtContent = await GetTxtContent(bookFile);
-                _readerView.ViewStyle = style as ReaderStyle;
             }
             else
             {
                 ReaderType = _readerView.ReaderType = ReaderType.Epub;
                 _epubContent = await EpubReader.Read(bookFile, Encoding.Default);
-                Chapters = GetEpubChapters(_epubContent);
-                ChapterLoaded?.Invoke(this, Chapters);
+                if (!hasExternalChapters)
+                {
+                    Chapters = GetEpubChapters(_epubContent);
+                    ChapterLoaded?.Invoke(this, Chapters);
+                }
                 _readerView.EpubInit(_epubContent, style);
             }
 
             OpenCompleted?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// 重新生成Txt章节目录
+        /// </summary>
+        /// <param name="splitRegex">分章正则表达式</param>
+        /// <param name="bookTitle">书籍标题（用于目录首章）</param>
+        /// <param name="replaceCurrentChapters">是否替换当前阅读器内的章节目录（会重新加载最近的章节内容）</param>
+        /// <returns></returns>
+        public List<Chapter> RegenerateTxtChapters(Regex splitRegex, string bookTitle, bool replaceCurrentChapters = false)
+        {
+            if (ReaderType != ReaderType.Txt)
+                throw new InvalidOperationException("The reader type must be Txt");
+            if (string.IsNullOrEmpty(bookTitle))
+                throw new ArgumentNullException("Should have the book title");
+            ChapterDivisionRegex = splitRegex;
+            var chapters = GetTxtChapters(_txtContent, bookTitle);
+            if (replaceCurrentChapters)
+            {
+                Chapters = chapters;
+                if (CurrentChapter != null)
+                {
+                    var tempChapter = chapters.Where(p => p.StartLength >= CurrentChapter.StartLength).FirstOrDefault();
+                    if (tempChapter != null)
+                        CurrentChapter = tempChapter;
+                    else
+                        CurrentChapter = chapters.First();
+                }
+                else
+                    CurrentChapter = chapters.First();
+                LoadChapter(CurrentChapter);
+            }
+            return chapters;
         }
 
         /// <summary>
