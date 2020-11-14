@@ -206,9 +206,10 @@ namespace Richasy.Controls.Reader
                     BackgroundSource = AcrylicBackgroundSource.HostBackdrop
                 };
                 _rootGrid.Background = acrylic;
+                _readerView.Background = acrylic;
             }
             else
-                _rootGrid.Background = new SolidColorBrush(style.Background);
+                _rootGrid.Background = _readerView.Background = new SolidColorBrush(style.Background);
         }
 
         /// <summary>
