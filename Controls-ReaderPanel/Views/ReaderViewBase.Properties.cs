@@ -13,48 +13,37 @@ namespace Richasy.Controls.Reader.Views
 {
     public partial class ReaderViewBase
     {
-
+        private int _index;
         public int Index
         {
-            get { return (int)GetValue(IndexProperty); }
-            set { SetValue(IndexProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for Index.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty IndexProperty =
-            DependencyProperty.Register("Index", typeof(int), typeof(ReaderViewBase), new PropertyMetadata(0, new PropertyChangedCallback(Index_Changed)));
-
-        private static void Index_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (e.NewValue != e.OldValue)
+            get => _index;
+            set
             {
-                var index = (int)e.NewValue;
-                if (d is ReaderViewBase sender)
+                _index = value;
+                int index = value;
+                if (!IsCoreSelectedChanged)
                 {
-                    if (!sender.IsCoreSelectedChanged)
-                    {
-                        sender.GoToIndex(index);
-                    }
-                    try
-                    {
-                        int currentOverflowIndex = sender._columns * index;
-                        int length = 0;
-                        length = Convert.ToInt32(sender._content.Length * (currentOverflowIndex / (sender._tempOverflowList.Count * 1.0)));
-                        sender._startTextIndex = length;
-                    }
-                    catch (Exception ex)
-                    {
-#if DEBUG
-                        Debug.WriteLine(ex.Message);
-#endif
-                    }
-                    if (index < 0) sender.OnPrevPageSelected();
-                    else if (index > sender.Count - 1) sender.OnNextPageSelected();
-                    sender.OnProgressChanged();
+                    GoToIndex(index);
                 }
+                try
+                {
+                    int currentOverflowIndex = _columns * index;
+                    int length = 0;
+                    length = Convert.ToInt32(_content.Length * (currentOverflowIndex / (_tempOverflowList.Count * 1.0)));
+                    _startTextIndex = length;
+                }
+                catch (Exception ex)
+                {
+#if DEBUG
+                    Debug.WriteLine(ex.Message);
+#endif
+                }
+                if (index < 0) OnPrevPageSelected();
+                else if (index > Count - 1) OnNextPageSelected();
+                OnProgressChanged();
             }
         }
-
+        
         public int Count
         {
             get { return (int)GetValue(CountProperty); }

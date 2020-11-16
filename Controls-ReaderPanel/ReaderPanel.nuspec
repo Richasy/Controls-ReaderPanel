@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Richasy.Controls.ReaderPanel</id>
-    <version>1.0.4</version>
+    <version>1.0.5</version>
     <authors>Richasy</authors>
     <owners>Richasy</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -10,12 +10,12 @@
     <projectUrl>https://github.com/Richasy/Controls-ReaderPanel</projectUrl>
     <iconUrl>https://i.loli.net/2020/11/04/rRldg9FvEpjAuVY.png</iconUrl>
     <description>Reading control made for UWP, theoretically supports TXT and Epub</description>
-    <releaseNotes>Add new method to regenerate the txt chapters</releaseNotes>
+    <releaseNotes>Fix the render problem of scroll to previous chapter</releaseNotes>
     <copyright>Copyright 2020</copyright>
     <tags>Richasy uwp reader txt epub</tags>
     <dependencies>
       <group targetFramework="uap10.0.17763">
-        <dependency id="HtmlAgilityPack" version="1.11.26" />
+        <dependency id="HtmlAgilityPack" version="1.11.28" />
         <dependency id="Microsoft.NETCore.UniversalWindowsPlatform" version="6.2.10" />
         <dependency id="UDE.CSharp.UWP" version="1.0.1" />
       </group>

@@ -64,23 +64,24 @@ namespace Richasy.Controls.Reader.Views
             }
         }
 
-        private void GoToIndex(int index, bool UseAnimation = true)
+        private async void GoToIndex(int index, bool UseAnimation = true)
         {
             if (index < 0) return;
             var temp = _displayBlock.GetPositionFromPoint(new Point(0, 0));
             _displayBlock.Select(temp, temp);
-
             double moveOffset = _displayContainer.ActualWidth / _displayContainer.ColumnDefinitions.Count * _columns;
             if (UseAnimation)
             {
                 OffsetAnimation.InsertKeyFrame(1f, new Vector3((float)(moveOffset * index), 0f, 0f));
                 _tracker.TryUpdatePositionWithAnimation(OffsetAnimation);
+                UpdateContentLayout();
             }
             else
             {
+                UpdateContentLayout();
+                await Task.Delay(100);
                 _tracker.TryUpdatePosition(new Vector3((float)(ParentWidth * index)), 0f, 0f);
             }
-            UpdateContentLayout();
         }
 
         private void FlyoutInit()
