@@ -116,6 +116,34 @@ For more usage methods, please check the **SampleApp** in the project
 
 Generally speaking, only a limited number of text encodings are provided in UWP. If you want to create a novel reader, then you need to support a wide range of text encodings. So you have to add this code in App.xaml.cs: `Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);`
 
+## Inside Search
+
+The control provides an internal search method to quickly locate matching chapters based on keywords. (NEED BOOK OPENED)
+
+```csharp
+var searchResult = await Reader.GetInsideSearchResult(keyword);
+if (searchResult.Count > 0)
+{
+    StringBuilder builder = new StringBuilder();
+    foreach (var item in searchResult)
+    {
+        builder.AppendLine($"Chapter：{item.Chapter.Title}");
+        builder.AppendLine($"Match text：{item.SearchText}");
+        builder.AppendLine($"Context：{item.DisplayText}");
+        builder.AppendLine("------");
+    }
+    await new MessageDialog(builder.ToString()).ShowAsync();
+}
+```
+
+*It should be noted that if it is the `Custom` mode, only the chapter name can be matched, but the content cannot be matched. Because in the design, `Custom` mode is used to load uncertain chapters (such as online reading), because the content of the chapter is unknown, it cannot be matched*
+
+If you need to jump to a specified location based on a certain query result, you can call `LoadSearchItem`:
+
+```csharp
+Reader.LoadSearchItem(someItem);
+```
+
 ## How to operate Image in Epub
 
 When rendering the current chapter of the Epub book, I attached a `Tapped` event to each **Image**, you can use this to implement some "click on the picture to enlarge" or "click on the picture to save" operation.
