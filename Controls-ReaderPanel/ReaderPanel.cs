@@ -172,9 +172,18 @@ namespace Richasy.Controls.Reader
         /// 加载章节（需要与当前书籍匹配）
         /// </summary>
         /// <param name="chapter">章节</param>
-        public void LoadChapter(Chapter chapter)
+        public void LoadChapter(Chapter chapter,int addonLength=0)
         {
-            SetProgress(chapter, 0);
+            SetProgress(chapter, addonLength);
+        }
+
+        /// <summary>
+        /// 加载搜索结果对应的位置（需要与当前书籍匹配）
+        /// </summary>
+        /// <param name="search">搜索结果</param>
+        public void LoadSearchItem(InsideSearchItem search)
+        {
+            SetProgress(search.Chapter, search.AddonLength);
         }
 
         /// <summary>
@@ -379,7 +388,7 @@ namespace Richasy.Controls.Reader
         /// 内部查询
         /// </summary>
         /// <param name="searchText">关键词（可以作为正则表达式）</param>
-        public async Task<List<InsideSearchItem>> GetInsideSearchResult(string searchText)
+        public async Task<List<InsideSearchItem>> GetInsideSearchResultAsync(string searchText)
         {
             if (Chapters == null || Chapters.Count == 0)
                 throw new InvalidCastException("Chapters not loaded");
@@ -410,7 +419,7 @@ namespace Richasy.Controls.Reader
                             item.Chapter = chapter;
                             item.DisplayText = display;
                             item.SearchText = value;
-                            item.Index = index - chapter.StartLength;
+                            item.AddonLength = index - chapter.StartLength;
                             item.DisplayText = item.DisplayText.Trim();
                             result.Add(item);
                         }));
@@ -448,7 +457,7 @@ namespace Richasy.Controls.Reader
                                 item.Chapter = chapter;
                                 item.DisplayText = display.Trim();
                                 item.SearchText = value;
-                                item.Index = index;
+                                item.AddonLength = index;
                                 result.Add(item);
                             }
                         }
@@ -461,19 +470,18 @@ namespace Richasy.Controls.Reader
                 var chapters = Chapters.Where(p => regex.IsMatch(p.Title));
                 if (chapters.Count() > 0)
                 {
-                    int index = 0;
                     foreach (var chapter in chapters)
                     {
                         var item = new InsideSearchItem();
                         item.Chapter = chapter;
                         item.DisplayText = chapter.Title;
                         item.SearchText = regex.Match(chapter.Title).Value;
-                        item.Index = index;
+                        item.AddonLength = 0;
                         result.Add(item);
                     }
                 }
             }
-            return result.OrderBy(p=>p.Chapter.Index).ThenBy(p=>p.Index).ToList();
+            return result.OrderBy(p=>p.Chapter.Index).ThenBy(p=>p.AddonLength).ToList();
         }
 
         
