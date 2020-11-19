@@ -81,13 +81,13 @@ namespace Richasy.Controls.Reader
         {
             var orders = _epubContent.SpecialResources.HtmlInReadingOrder;
             Chapter lastChapter = null;
+            int currentIndex = orders.IndexOf(chapter);
             foreach (var header in Chapters)
             {
                 var corr = orders.Where(p => p.AbsolutePath == header.Link).FirstOrDefault();
                 if (corr != null)
                 {
                     int index = orders.IndexOf(corr);
-                    int currentIndex = orders.IndexOf(chapter);
                     if (currentIndex >= index)
                         lastChapter = header;
                     else
@@ -95,6 +95,39 @@ namespace Richasy.Controls.Reader
                 }
             }
             return lastChapter;
+        }
+        
+        /// <summary>
+        /// 获取搜索结果的显示文本（用于文本截断）
+        /// </summary>
+        /// <param name="totalContent">全部内容</param>
+        /// <param name="startIndex">搜索结果起始位置</param>
+        /// <param name="value">搜索内容</param>
+        /// <returns></returns>
+        private string GetDisplayText(string totalContent, int startIndex, string value)
+        {
+            string prefix = string.Empty;
+            string suffix = string.Empty;
+            bool isSuspendPrefix = false;
+            bool isSuspendSuffix = false;
+            for (int j = 0; j < 30; j++)
+            {
+                if (startIndex - j >= 0)
+                {
+                    if (Environment.NewLine.Contains(totalContent[startIndex - j]))
+                        isSuspendPrefix = true;
+                    if (!isSuspendPrefix && totalContent[startIndex - j - 1] != ' ')
+                        prefix += totalContent[startIndex - j - 1];
+                }
+                if (startIndex + value.Length + j < totalContent.Length)
+                {
+                    if (Environment.NewLine.Contains(totalContent[startIndex + value.Length + j]))
+                        isSuspendSuffix = true;
+                    if (!isSuspendSuffix && totalContent[startIndex + value.Length + j] != ' ')
+                        suffix += totalContent[startIndex + value.Length + j];
+                }
+            }
+            return (string.Concat(prefix.Reverse()) + value + suffix).Trim();
         }
         #endregion
 

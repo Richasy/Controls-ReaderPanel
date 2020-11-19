@@ -22,9 +22,19 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Button HorizontalAlignment="Center" VerticalAlignment="Center"
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Button HorizontalAlignment="Center" VerticalAlignment="Center"
                 Content="Open book file" Click="Button_Click"
                 x:Name="FileButton"/>
+            <AutoSuggestBox x:Name="SearchBox" QueryIcon="Zoom" Margin="20,0,0,0"
+                            QuerySubmitted="SearchBox_QuerySubmitted"
+                            Grid.Column="1" MaxWidth="300" HorizontalAlignment="Stretch"/>
+        </Grid>
+        
         <Grid x:Name="DisplayGrid" Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>

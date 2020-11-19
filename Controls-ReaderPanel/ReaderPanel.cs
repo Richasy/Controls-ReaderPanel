@@ -374,5 +374,108 @@ namespace Richasy.Controls.Reader
         {
             _readerView.SetContent(detail.GetReadContent(), mode, addonLength);
         }
+
+        /// <summary>
+        /// 内部查询
+        /// </summary>
+        /// <param name="searchText">关键词（可以作为正则表达式）</param>
+        public async Task<List<InsideSearchItem>> GetInsideSearchResult(string searchText)
+        {
+            if (Chapters == null || Chapters.Count == 0)
+                throw new InvalidCastException("Chapters not loaded");
+            else if (string.IsNullOrEmpty(searchText))
+                throw new ArgumentNullException("Search text is null or empty");
+
+            var result = new List<InsideSearchItem>();
+            var regex = new Regex(searchText, RegexOptions.IgnoreCase);
+            if (ReaderType == ReaderType.Txt && !string.IsNullOrEmpty(_txtContent))
+            {
+                var matches = regex.Matches(_txtContent);
+                if (matches.Count > 0)
+                {
+                    var tasks = new List<Task>();
+                    for (int i = 0; i < matches.Count; i++)
+                    {
+                        int index = matches[i].Index;
+                        string value = matches[i].Value;
+                        if (value.Length > 60)
+                            value = value.Substring(0, 60).Trim();
+                        tasks.Add(Task.Run(() =>
+                        {
+                            string display = GetDisplayText(_txtContent, index, value);
+                            var chapter = Chapters.Where(p => p.StartLength <= index).OrderByDescending(p => p.Index).FirstOrDefault();
+                            if (chapter == null)
+                                return;
+                            var item = new InsideSearchItem();
+                            item.Chapter = chapter;
+                            item.DisplayText = display;
+                            item.SearchText = value;
+                            item.Index = index - chapter.StartLength;
+                            item.DisplayText = item.DisplayText.Trim();
+                            result.Add(item);
+                        }));
+                    }
+                    await Task.WhenAll(tasks.ToArray());
+                }
+            }
+            else if(ReaderType==ReaderType.Epub && _epubContent != null)
+            {
+                var orders = _epubContent.SpecialResources.HtmlInReadingOrder;
+                var tasks = new List<Task>();
+                foreach (var order in orders)
+                {
+                    tasks.Add(Task.Run(() =>
+                    {
+                        string text = Regex.Replace(order.TextContent, @"<[^>]*>", string.Empty);
+                        var matches = regex.Matches(text);
+                        if (matches.Count > 0)
+                        {
+                            var chapter = Chapters.Where(p => p.Link.Contains(order.AbsolutePath, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                            if (chapter == null)
+                            {
+                                chapter = GetLastEpubChapter(order);
+                                if (chapter == null)
+                                    return;
+                            }
+                            for (int i = 0; i < matches.Count; i++)
+                            {
+                                int index = matches[i].Index;
+                                string value = matches[i].Value;
+                                if (value.Length > 60)
+                                    value = value.Substring(0, 60).Trim();
+                                string display = GetDisplayText(text, index, value);
+                                var item = new InsideSearchItem();
+                                item.Chapter = chapter;
+                                item.DisplayText = display.Trim();
+                                item.SearchText = value;
+                                item.Index = index;
+                                result.Add(item);
+                            }
+                        }
+                    }));
+                }
+                await Task.WhenAll(tasks.ToArray());
+            }
+            else
+            {
+                var chapters = Chapters.Where(p => regex.IsMatch(p.Title));
+                if (chapters.Count() > 0)
+                {
+                    int index = 0;
+                    foreach (var chapter in chapters)
+                    {
+                        var item = new InsideSearchItem();
+                        item.Chapter = chapter;
+                        item.DisplayText = chapter.Title;
+                        item.SearchText = regex.Match(chapter.Title).Value;
+                        item.Index = index;
+                        result.Add(item);
+                    }
+                }
+            }
+            return result.OrderBy(p=>p.Chapter.Index).ThenBy(p=>p.Index).ToList();
+        }
+
+        
     }
 }

@@ -163,6 +163,7 @@
     <Compile Include="Models\EventArgs\ImageEventArgs.cs" />
     <Compile Include="Models\EventArgs\LinkEventArgs.cs" />
     <Compile Include="Models\EventArgs\PositionEventArgs.cs" />
+    <Compile Include="Models\InsideSearchItem.cs" />
     <Compile Include="Models\Style\ReaderStyle.cs" />
     <Compile Include="Models\Tip.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

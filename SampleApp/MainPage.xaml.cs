@@ -168,6 +168,34 @@ namespace SampleApp
             else if (e.Key == VirtualKey.Right)
                 Reader.Next();
         }
+
+        private async void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            try
+            {
+                string text = args.QueryText;
+                if (!string.IsNullOrEmpty(text))
+                {
+                    var result = await Reader.GetInsideSearchResult(text);
+                    if (result.Count > 0)
+                    {
+                        StringBuilder builder = new StringBuilder();
+                        foreach (var item in result)
+                        {
+                            builder.AppendLine($"章节：{item.Chapter.Title}");
+                            builder.AppendLine($"匹配文本：{item.SearchText}");
+                            builder.AppendLine($"上下文：{item.DisplayText}");
+                            builder.AppendLine("------");
+                        }
+                        await new MessageDialog(builder.ToString()).ShowAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await new MessageDialog(ex.Message).ShowAsync();
+            }
+        }
     }
 
     public class LevelMarginCovnerter : IValueConverter
