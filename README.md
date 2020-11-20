@@ -121,7 +121,7 @@ Generally speaking, only a limited number of text encodings are provided in UWP.
 The control provides an internal search method to quickly locate matching chapters based on keywords. (NEED BOOK OPENED)
 
 ```csharp
-var searchResult = await Reader.GetInsideSearchResult(keyword);
+var searchResult = await Reader.GetInsideSearchResultAsync(keyword);
 if (searchResult.Count > 0)
 {
     StringBuilder builder = new StringBuilder();
