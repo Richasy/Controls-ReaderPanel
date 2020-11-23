@@ -4,11 +4,13 @@ using Richasy.Controls.Reader.Models.Epub;
 using Richasy.Helper.UWP;
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Text.RegularExpressions;
+using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.System;
 using Windows.UI.Popups;
@@ -97,11 +99,13 @@ namespace SampleApp
         private void Reader_SetContentStarting(object sender, EventArgs e)
         {
             LoadingRing.IsActive = true;
+            ReadButton.IsEnabled = false;
         }
 
         private void Reader_SetContentCompleted(object sender, EventArgs e)
         {
             LoadingRing.IsActive = false;
+            ReadButton.IsEnabled = true;
         }
 
         private async void CommandButton_Click(object sender, RoutedEventArgs e)
@@ -176,7 +180,7 @@ namespace SampleApp
                 string text = args.QueryText;
                 if (!string.IsNullOrEmpty(text))
                 {
-                    var result = await Reader.GetInsideSearchResult(text);
+                    var result = await Reader.GetInsideSearchResultAsync(text);
                     if (result.Count > 0)
                     {
                         StringBuilder builder = new StringBuilder();
@@ -195,6 +199,35 @@ namespace SampleApp
             {
                 await new MessageDialog(ex.Message).ShowAsync();
             }
+        }
+
+        private async void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            var source = await Reader.GetChapterVoiceAsync(Reader.CurrentChapter, false, new Windows.Media.SpeechSynthesis.SpeechSynthesizer());
+            var player = new MediaPlayer();
+            player.Source = source;
+            player.PlaybackSession.PositionChanged += MediaPlayer_PositionChanged;
+            player.PlaybackSession.PlaybackStateChanged += MediaPlayer_PlaybackChanged;
+            MPE.SetMediaPlayer(player);
+            player.Play();
+            MPE.Visibility = Visibility.Visible;
+        }
+
+        private void MediaPlayer_PlaybackChanged(MediaPlaybackSession sender, object args)
+        {
+            Debug.WriteLine(sender.PlaybackState);
+        }
+
+        private async void MediaPlayer_PositionChanged(MediaPlaybackSession sender, object args)
+        {
+            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                double modulus = sender.Position.TotalMilliseconds / sender.NaturalDuration.TotalMilliseconds;
+                if (double.IsNaN(modulus))
+                    modulus = 0;
+                Reader.CheckCurrentReaderIndex(modulus);
+            });
+            
         }
     }
 

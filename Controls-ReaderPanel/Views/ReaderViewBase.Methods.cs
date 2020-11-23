@@ -64,7 +64,7 @@ namespace Richasy.Controls.Reader.Views
             }
         }
 
-        private async void GoToIndex(int index, bool UseAnimation = true)
+        public async void GoToIndex(int index, bool UseAnimation = true)
         {
             if (index < 0) return;
             var temp = _displayBlock.GetPositionFromPoint(new Point(0, 0));

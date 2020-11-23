@@ -26,6 +26,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Button HorizontalAlignment="Center" VerticalAlignment="Center"
                 Content="Open book file" Click="Button_Click"
@@ -33,6 +34,8 @@
             <AutoSuggestBox x:Name="SearchBox" QueryIcon="Zoom" Margin="20,0,0,0"
                             QuerySubmitted="SearchBox_QuerySubmitted"
                             Grid.Column="1" MaxWidth="300" HorizontalAlignment="Stretch"/>
+            <Button Content="Read current chapter" VerticalAlignment="Center" Grid.Column="2"
+                    Click="Button_Click_1" IsEnabled="False" x:Name="ReadButton"/>
         </Grid>
         
         <Grid x:Name="DisplayGrid" Grid.Row="1">
@@ -87,6 +90,13 @@
                       Width="40" Height="40" Name="LoadingRing" Grid.Column="1"
                       />
         </Grid>
+
+        <MediaPlayerElement Grid.Row="1" VerticalAlignment="Bottom" Visibility="Collapsed"
+                            HorizontalAlignment="Center" x:Name="MPE">
+            <MediaPlayerElement.TransportControls>
+                <MediaTransportControls x:Name="MTC"/>
+            </MediaPlayerElement.TransportControls>
+        </MediaPlayerElement>
     </Grid>
     
 </Page>

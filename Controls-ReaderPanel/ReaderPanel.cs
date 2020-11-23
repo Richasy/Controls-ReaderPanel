@@ -10,6 +10,9 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Windows.Media.Core;
+using Windows.Media.Playback;
+using Windows.Media.SpeechSynthesis;
 using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -172,7 +175,7 @@ namespace Richasy.Controls.Reader
         /// 加载章节（需要与当前书籍匹配）
         /// </summary>
         /// <param name="chapter">章节</param>
-        public void LoadChapter(Chapter chapter,int addonLength=0)
+        public void LoadChapter(Chapter chapter, int addonLength = 0)
         {
             SetProgress(chapter, addonLength);
         }
@@ -427,7 +430,7 @@ namespace Richasy.Controls.Reader
                     await Task.WhenAll(tasks.ToArray());
                 }
             }
-            else if(ReaderType==ReaderType.Epub && _epubContent != null)
+            else if (ReaderType == ReaderType.Epub && _epubContent != null)
             {
                 var orders = _epubContent.SpecialResources.HtmlInReadingOrder;
                 var tasks = new List<Task>();
@@ -481,9 +484,51 @@ namespace Richasy.Controls.Reader
                     }
                 }
             }
-            return result.OrderBy(p=>p.Chapter.Index).ThenBy(p=>p.AddonLength).ToList();
+            return result.OrderBy(p => p.Chapter.Index).ThenBy(p => p.AddonLength).ToList();
         }
 
-        
+        /// <summary>
+        /// 获取章节语音
+        /// </summary>
+        /// <param name="chapter">章节</param>
+        /// <param name="setCurrentChapter">是否将其设置为当前章节</param>
+        /// <param name="synthesizer">语音合成器</param>
+        /// <returns></returns>
+        public async Task<MediaSource> GetChapterVoiceAsync(Chapter chapter, bool setCurrentChapter = false, SpeechSynthesizer synthesizer = null)
+        {
+            if (Chapters.Count == 0)
+                throw new InvalidCastException("Chapter not loaded");
+            else if (chapter == null || !Chapters.Contains(chapter))
+                throw new ArgumentException("The chapter is not in current book");
+
+            if (CurrentChapter != chapter)
+                LoadChapter(chapter);
+            bool isTempSyn = false;
+            if (synthesizer == null)
+            {
+                synthesizer = new SpeechSynthesizer();
+                isTempSyn = true;
+            }  
+            string content = GetReadText(chapter);
+            var stream = await synthesizer.SynthesizeTextToStreamAsync(content);
+            MediaSource source = MediaSource.CreateFromStream(stream, stream.ContentType);
+            if (isTempSyn)
+                synthesizer.Dispose();
+            return source;
+        }
+
+        /// <summary>
+        /// 检查当前阅读器的页标
+        /// </summary>
+        /// <param name="modulus">比例系数（通常指语音阅读时已读时长与总时长的比值）</param>
+        public void CheckCurrentReaderIndex(double modulus)
+        {
+            var count = _readerView.Count;
+            int index = Convert.ToInt32(Math.Floor(count * modulus));
+            if (index != _readerView.Index)
+            {
+                _readerView.Index = index;
+            }
+        }
     }
 }

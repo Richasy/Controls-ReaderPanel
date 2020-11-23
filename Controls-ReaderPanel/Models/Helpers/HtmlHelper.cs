@@ -23,7 +23,7 @@ namespace Richasy.Controls.Reader.Models
 {
     internal class HtmlHelper
     {
-        private string HtmlContent { get; set; }
+        public string HtmlContent { get; set; }
         private ReaderStyle Style { get; set; }
 
         public List<Block> RenderBlocks { get; private set; }

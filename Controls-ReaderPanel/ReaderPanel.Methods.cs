@@ -286,6 +286,58 @@ namespace Richasy.Controls.Reader
             return bookContent;
         }
 
+        /// <summary>
+        /// 获取可朗读文本
+        /// </summary>
+        /// <param name="chapter">章节
+        /// </param>
+        /// <returns></returns>
+        public string GetReadText(Chapter chapter)
+        {
+            string result = string.Empty;
+            if (chapter != null)
+            {
+                string content = GetChapterText(chapter);
+                if (ReaderType == Enums.ReaderType.Epub)
+                {
+                    var body = Regex.Match(content, @"<body[^>]*>([\s\S]*)<\/body>").Value;
+                    content = Regex.Replace(body, @"<[^>]+>", "", RegexOptions.IgnoreCase);
+                }
+                result = content; 
+            }
+            return result;
+        }
+
+        private string GetChapterText(Chapter chapter)
+        {
+            string content = "";
+            if (ReaderType == Enums.ReaderType.Txt)
+            {
+                int nextIndex = chapter.Index + 1;
+                if (nextIndex >= Chapters.Count)
+                    content = _txtContent.Substring(chapter.StartLength);
+                else
+                    content = _txtContent.Substring(chapter.StartLength, Chapters[nextIndex].StartLength - chapter.StartLength);
+            }
+            else if (ReaderType == Enums.ReaderType.Custom)
+            {
+                var detail = CustomChapterDetailList.Where(p => p.Index == chapter.Index).FirstOrDefault();
+                if (detail != null)
+                    content = detail.GetReadContent();
+            }
+            else
+            {
+                var info = _epubContent.SpecialResources.HtmlInReadingOrder.Where(p => p.AbsolutePath.Equals(chapter.Link, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                if (info != null)
+                {
+                    content = info.TextContent;
+                }
+                else
+                    content = chapter.Title;
+            }
+            return content;
+        }
+
         private void SetProgress(Chapter chapter, int addonLength = 0)
         {
             if (Chapters == null || Chapters.Count == 0 || !Chapters.Any(p => p.Equals(chapter)))
