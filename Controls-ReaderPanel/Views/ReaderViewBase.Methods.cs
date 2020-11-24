@@ -101,7 +101,7 @@ namespace Richasy.Controls.Reader.Views
                 NextPageSelected?.Invoke(this, EventArgs.Empty);
             else
             {
-                for (int i = 1; i <= startIndex + (_columns * 2); i++)
+                for (int i = 1; i <= startIndex + _columns; i++)
                 {
                     if (i < 0)
                         continue;
