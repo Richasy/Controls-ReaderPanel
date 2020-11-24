@@ -116,7 +116,7 @@ For more usage methods, please check the **SampleApp** in the project
 
 Generally speaking, only a limited number of text encodings are provided in UWP. If you want to create a novel reader, then you need to support a wide range of text encodings. So you have to add this code in App.xaml.cs: `Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);`
 
-## Inside Search
+## Inside search
 
 The control provides an internal search method to quickly locate matching chapters based on keywords. (NEED BOOK OPENED)
 
@@ -203,11 +203,50 @@ private async void Reader_LinkTapped(object sender, LinkEventArgs e)
 }
 ```
 
+## Speech synthesis
+
+The control supports the use of SpeechSynthesis API provided by UWP to read the current chapter.
+
+```csharp
+private async void SpeechButton_Click(object sender, RoutedEventArgs e)
+{
+    try
+    {
+        var source = await Reader.GetChapterVoiceAsync(Reader.CurrentChapter, false, new SpeechSynthesizer());
+        var player = new MediaPlayer();
+        player.Source = source;
+        player.Play();
+    }
+    catch (Exception ex)
+    {
+        await new MessageDialog(ex.Message).ShowAsync();
+    }
+}
+```
+
+***If you need to change the speaker’s gender, intonation, or speaking speed, please configure `SpeechSynthesizer` by yourself.***
+
+If you need to make the reader adjust the page according to the current reading progress, you need to handle the `ReaderPanel.SpeechCueChanged` event.
+
+```csharp
+private void Reader_SpeechCueChanged(object sender, SpeechCueEventArgs e)
+{
+    if (e.Type == SpeechCueType.Word)
+    {
+        Reader.CheckCurrentReaderIndex(e.SpeechCue.StartPositionInInput);
+    }
+    else
+    {
+        // This is the sentence currently being read
+        SpeechBlock.Text = e.SpeechCue.Text;
+    }
+}
+```
+
 ## Known issues
 
 1. Currently does not support more e-book formats
 2. Text annotation is not supported temporarily
-3. Voice reading is not supported temporarily
 
 ## Thanks
 
