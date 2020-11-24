@@ -142,10 +142,9 @@ namespace Richasy.Controls.Reader.Views
                 count++;
 
                 tmp.Measure(new Size(singleWidth, singleHeight));
-                _tempOverflowList.Add(new RenderOverflow(false, tmp));
-
                 renderTarget = tmp;
                 hasOverflow = tmp.HasOverflowContent;
+                _tempOverflowList.Add(new RenderOverflow(false, tmp));
             }
 
             Count = Convert.ToInt32(Math.Ceiling(count / (_columns * 1.0)));
@@ -166,6 +165,40 @@ namespace Richasy.Controls.Reader.Views
 
             tmp.Padding = Padding;
             return tmp;
+        }
+
+        public int GetIndexFromStartOffset(int startOffset)
+        {
+            int index = -1;
+            for (int i = 0; i < _tempOverflowList.Count; i++)
+            {
+                if (_tempOverflowList[i].Element is RichTextBlock rtb)
+                {
+                    if (rtb.ContentEnd.Offset > startOffset)
+                    {
+                        index = 0;
+                        break;
+                    }
+                }
+                else if (_tempOverflowList[i].Element is RichTextBlockOverflow of)
+                {
+                    if (of.ContentEnd.Offset > startOffset)
+                    {
+                        index = i;
+                        break;
+                    }
+                    else
+                    {
+
+                    }
+                }
+            }
+            if (index == -1)
+                index = _tempOverflowList.Count-1;
+            double temp = index / (_columns * 1.0);
+            if (temp < 1)
+                return 0;
+            return Convert.ToInt32(Math.Ceiling(temp));
         }
     }
 }

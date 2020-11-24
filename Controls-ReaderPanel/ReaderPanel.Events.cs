@@ -22,6 +22,7 @@ namespace Richasy.Controls.Reader
         public event EventHandler<ImageEventArgs> ImageTapped;
         public event EventHandler ViewLoaded;
         public event EventHandler<CustomRequestEventArgs> CustomContentRequest;
+        public event EventHandler<SpeechCueEventArgs> SpeechCueChanged;
 
         public void OnPrevPageSelected(object sender, EventArgs args)
         {

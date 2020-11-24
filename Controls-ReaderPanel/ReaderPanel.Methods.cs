@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using Richasy.Controls.Reader.Enums;
 using Richasy.Controls.Reader.Models;
 using Richasy.Controls.Reader.Models.Epub;
 using Richasy.Controls.Reader.Models.Helpers;
@@ -10,7 +11,11 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Windows.Foundation.Collections;
+using Windows.Media.Core;
+using Windows.Media.Playback;
 using Windows.Storage;
+using Windows.UI.Core;
 
 namespace Richasy.Controls.Reader
 {
@@ -96,7 +101,7 @@ namespace Richasy.Controls.Reader
             }
             return lastChapter;
         }
-        
+
         /// <summary>
         /// 获取搜索结果的显示文本（用于文本截断）
         /// </summary>
@@ -303,7 +308,7 @@ namespace Richasy.Controls.Reader
                     var body = Regex.Match(content, @"<body[^>]*>([\s\S]*)<\/body>").Value;
                     content = Regex.Replace(body, @"<[^>]+>", "", RegexOptions.IgnoreCase);
                 }
-                result = content; 
+                result = content;
             }
             return result;
         }
@@ -377,6 +382,93 @@ namespace Richasy.Controls.Reader
                 _readerView.SetContent(content, Enums.ReaderStartMode.First, addonLength);
             }
             RaiseProgressChanged(addonLength);
+        }
+        #endregion
+
+        #region SpeechMethods
+        private void RegisterForWordBoundaryEvents(MediaPlaybackItem mediaPlaybackItem)
+        {
+            // If tracks were available at source resolution time, itterate through and register: 
+            for (int index = 0; index < mediaPlaybackItem.TimedMetadataTracks.Count; index++)
+            {
+                RegisterMetadataHandlerForWords(mediaPlaybackItem, index);
+                RegisterMetadataHandlerForSentences(mediaPlaybackItem, index);
+            }
+
+            // Since the tracks are added later we will  
+            // monitor the tracks being added and subscribe to the ones of interest 
+            mediaPlaybackItem.TimedMetadataTracksChanged += (MediaPlaybackItem sender, IVectorChangedEventArgs args) =>
+            {
+                if (args.CollectionChange == CollectionChange.ItemInserted)
+                {
+                    RegisterMetadataHandlerForWords(sender, (int)args.Index);
+                    RegisterMetadataHandlerForSentences(mediaPlaybackItem, (int)args.Index);
+                }
+                else if (args.CollectionChange == CollectionChange.Reset)
+                {
+                    for (int index = 0; index < sender.TimedMetadataTracks.Count; index++)
+                    {
+                        RegisterMetadataHandlerForWords(sender, index);
+                        RegisterMetadataHandlerForSentences(mediaPlaybackItem, index);
+                    }
+                }
+            };
+        }
+        /// <summary>
+        /// Register for just word boundary events.
+        /// </summary>
+        /// <param name="mediaPlaybackItem">The Media Playback Item to register handlers for.</param>
+        /// <param name="index">Index of the timedMetadataTrack within the mediaPlaybackItem.</param>
+        private void RegisterMetadataHandlerForWords(MediaPlaybackItem mediaPlaybackItem, int index)
+        {
+            var timedTrack = mediaPlaybackItem.TimedMetadataTracks[index];
+            //register for only word cues
+            if (timedTrack.Id == "SpeechWord")
+            {
+                timedTrack.CueEntered += metadata_SpeechCueEntered;
+                mediaPlaybackItem.TimedMetadataTracks.SetPresentationMode((uint)index, TimedMetadataTrackPresentationMode.ApplicationPresented);
+            }
+        }
+        /// <summary>
+        /// Register for just sentence boundary events.
+        /// </summary>
+        /// <param name="mediaPlaybackItem">The Media Playback Item to register handlers for.</param>
+        /// <param name="index">Index of the timedMetadataTrack within the mediaPlaybackItem.</param>
+        private void RegisterMetadataHandlerForSentences(MediaPlaybackItem mediaPlaybackItem, int index)
+        {
+            var timedTrack = mediaPlaybackItem.TimedMetadataTracks[index];
+            //register for only sentence cues
+            if (timedTrack.Id == "SpeechSentence")
+            {
+                timedTrack.CueEntered += metadata_SpeechCueEntered;
+                mediaPlaybackItem.TimedMetadataTracks.SetPresentationMode((uint)index, TimedMetadataTrackPresentationMode.ApplicationPresented);
+            }
+        }
+        /// <summary>
+        /// This function executes when a SpeechCue is hit and calls the functions to update the UI
+        /// </summary>
+        /// <param name="timedMetadataTrack">The timedMetadataTrack associated with the event.</param>
+        /// <param name="args">the arguments associated with the event.</param>
+        private async void metadata_SpeechCueEntered(TimedMetadataTrack timedMetadataTrack, MediaCueEventArgs args)
+        {
+            // Check in case there are different tracks and the handler was used for more tracks 
+            if (timedMetadataTrack.TimedMetadataKind == TimedMetadataKind.Speech)
+            {
+                var cue = args.Cue as SpeechCue;
+                if (cue != null)
+                {
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                     () =>
+                     {
+                         if (timedMetadataTrack.Id == "SpeechSentence" || timedMetadataTrack.Id == "SpeechWord")
+                         {
+                             SpeechCueType type = timedMetadataTrack.Id == "SpeechSentence" ? SpeechCueType.Sentence : SpeechCueType.Word;
+                             var arg = new SpeechCueEventArgs(cue, type);
+                             SpeechCueChanged?.Invoke(this, arg);
+                         }
+                     });
+                }
+            }
         }
         #endregion
     }

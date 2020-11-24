@@ -101,7 +101,7 @@ namespace Richasy.Controls.Reader.Views
                 NextPageSelected?.Invoke(this, EventArgs.Empty);
             else
             {
-                for (int i = 1; i < startIndex + _columns; i++)
+                for (int i = 1; i <= startIndex + (_columns * 2); i++)
                 {
                     if (i < 0)
                         continue;
@@ -119,6 +119,24 @@ namespace Richasy.Controls.Reader.Views
                     catch (Exception)
                     { }
                 }
+            }
+        }
+
+        public void RenderAllOverflows()
+        {
+            for (int i = 0; i < _tempOverflowList.Count; i++)
+            {
+                try
+                {
+                    if (!_tempOverflowList[i].IsRendered)
+                    {
+                        _displayContainer.Children.Add(_tempOverflowList[i].Element);
+                        Grid.SetColumn(_tempOverflowList[i].Element, i);
+                        _tempOverflowList[i].IsRendered = true;
+                    }
+                }
+                catch (Exception)
+                { }
             }
         }
         #endregion Private Method

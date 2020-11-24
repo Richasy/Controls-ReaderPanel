@@ -20,6 +20,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid>
@@ -37,8 +38,11 @@
             <Button Content="Read current chapter" VerticalAlignment="Center" Grid.Column="2"
                     Click="Button_Click_1" IsEnabled="False" x:Name="ReadButton"/>
         </Grid>
-        
-        <Grid x:Name="DisplayGrid" Grid.Row="1">
+        <StackPanel Grid.Row="1" Padding="10" x:Name="SpeechContainer" Visibility="Collapsed">
+            <TextBlock Text="Current read sentence:" FontSize="12" Margin="0,0,0,8"/>
+            <TextBlock TextWrapping="Wrap" Name="SpeechBlock" Style="{StaticResource BodyTextBlockStyle}"/>
+        </StackPanel>
+        <Grid x:Name="DisplayGrid" Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
@@ -63,6 +67,7 @@
                                 LinkTapped="Reader_LinkTapped"
                                 ViewLoaded="Reader_ViewLoaded"
                                 KeyDown="Reader_KeyDown"
+                                SpeechCueChanged="Reader_SpeechCueChanged"
                             Grid.Column="1">
                 <reader:ReaderPanel.Header>
                     <TextBlock Style="{StaticResource BaseTextBlockStyle}"
@@ -91,10 +96,11 @@
                       />
         </Grid>
 
-        <MediaPlayerElement Grid.Row="1" VerticalAlignment="Bottom" Visibility="Collapsed"
-                            HorizontalAlignment="Center" x:Name="MPE">
+        <MediaPlayerElement Grid.Row="2" VerticalAlignment="Bottom" Visibility="Collapsed"
+                            HorizontalAlignment="Center" x:Name="MPE" AreTransportControlsEnabled="True">
             <MediaPlayerElement.TransportControls>
-                <MediaTransportControls x:Name="MTC"/>
+                <MediaTransportControls x:Name="MTC" Visibility="Visible"
+                                        />
             </MediaPlayerElement.TransportControls>
         </MediaPlayerElement>
     </Grid>

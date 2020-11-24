@@ -10,12 +10,14 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Windows.Foundation;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.Media.SpeechSynthesis;
 using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Media;
 
 namespace Richasy.Controls.Reader
@@ -494,7 +496,7 @@ namespace Richasy.Controls.Reader
         /// <param name="setCurrentChapter">是否将其设置为当前章节</param>
         /// <param name="synthesizer">语音合成器</param>
         /// <returns></returns>
-        public async Task<MediaSource> GetChapterVoiceAsync(Chapter chapter, bool setCurrentChapter = false, SpeechSynthesizer synthesizer = null)
+        public async Task<MediaPlaybackItem> GetChapterVoiceAsync(Chapter chapter, bool setCurrentChapter = false, SpeechSynthesizer synthesizer = null)
         {
             if (Chapters.Count == 0)
                 throw new InvalidCastException("Chapter not loaded");
@@ -503,28 +505,32 @@ namespace Richasy.Controls.Reader
 
             if (CurrentChapter != chapter)
                 LoadChapter(chapter);
+            _readerView.RenderAllOverflows();
             bool isTempSyn = false;
             if (synthesizer == null)
             {
                 synthesizer = new SpeechSynthesizer();
                 isTempSyn = true;
-            }  
+            }
+            synthesizer.Options.IncludeSentenceBoundaryMetadata = true;
+            synthesizer.Options.IncludeWordBoundaryMetadata = true;
             string content = GetReadText(chapter);
             var stream = await synthesizer.SynthesizeTextToStreamAsync(content);
             MediaSource source = MediaSource.CreateFromStream(stream, stream.ContentType);
             if (isTempSyn)
                 synthesizer.Dispose();
-            return source;
+            var playback = new MediaPlaybackItem(source);
+            RegisterForWordBoundaryEvents(playback);
+            return playback;
         }
 
         /// <summary>
         /// 检查当前阅读器的页标
         /// </summary>
-        /// <param name="modulus">比例系数（通常指语音阅读时已读时长与总时长的比值）</param>
-        public void CheckCurrentReaderIndex(double modulus)
+        /// <param name="startPosition">起始位置（通常与SpeechCueChanged事件联用）</param>
+        public void CheckCurrentReaderIndex(int? startPosition)
         {
-            var count = _readerView.Count;
-            int index = Convert.ToInt32(Math.Floor(count * modulus));
+            int index = _readerView.GetIndexFromStartOffset(startPosition ?? 0);
             if (index != _readerView.Index)
             {
                 _readerView.Index = index;

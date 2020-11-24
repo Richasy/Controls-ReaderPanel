@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Richasy.Controls.Reader.Enums;
 using Richasy.Controls.Reader.Models;
 using Richasy.Controls.Reader.Models.Epub;
 using Richasy.Helper.UWP;
@@ -13,6 +14,7 @@ using System.Text.RegularExpressions;
 using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.System;
+using Windows.UI.Core;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -32,6 +34,7 @@ namespace SampleApp
         public ObservableCollection<Chapter> ChapterCollection = new ObservableCollection<Chapter>();
         private Instance instance = new Instance("Reader");
         private StorageFile _localFile = null;
+        private MediaPlaybackItem _playSource = null;
         public MainPage()
         {
             this.InitializeComponent();
@@ -204,30 +207,40 @@ namespace SampleApp
         private async void Button_Click_1(object sender, RoutedEventArgs e)
         {
             var source = await Reader.GetChapterVoiceAsync(Reader.CurrentChapter, false, new Windows.Media.SpeechSynthesis.SpeechSynthesizer());
+            _playSource = source;
             var player = new MediaPlayer();
             player.Source = source;
-            player.PlaybackSession.PositionChanged += MediaPlayer_PositionChanged;
-            player.PlaybackSession.PlaybackStateChanged += MediaPlayer_PlaybackChanged;
+            player.MediaEnded += MediaPlayer_Ended;
             MPE.SetMediaPlayer(player);
             player.Play();
+            SpeechContainer.Visibility = Visibility.Visible;
             MPE.Visibility = Visibility.Visible;
         }
 
-        private void MediaPlayer_PlaybackChanged(MediaPlaybackSession sender, object args)
+        private async void MediaPlayer_Ended(MediaPlayer sender, object args)
         {
-            Debug.WriteLine(sender.PlaybackState);
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+             () =>
+             {
+                 SpeechContainer.Visibility = Visibility.Collapsed;
+                 if (_playSource != null)
+                 {
+                     _playSource.Source.Dispose();
+                     _playSource = null;
+                 }
+             });
         }
 
-        private async void MediaPlayer_PositionChanged(MediaPlaybackSession sender, object args)
+        private void Reader_SpeechCueChanged(object sender, SpeechCueEventArgs e)
         {
-            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            if (e.Type == SpeechCueType.Word)
             {
-                double modulus = sender.Position.TotalMilliseconds / sender.NaturalDuration.TotalMilliseconds;
-                if (double.IsNaN(modulus))
-                    modulus = 0;
-                Reader.CheckCurrentReaderIndex(modulus);
-            });
-            
+                Reader.CheckCurrentReaderIndex(e.SpeechCue.StartPositionInInput);
+            }
+            else
+            {
+                SpeechBlock.Text = e.SpeechCue.Text;
+            }
         }
     }
 
