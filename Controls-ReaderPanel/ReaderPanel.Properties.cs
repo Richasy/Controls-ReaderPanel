@@ -77,5 +77,17 @@ namespace Richasy.Controls.Reader
                     instance._readerView.ReaderFlyout = flyout;
             }
         }
+
+        public int SpeechMaxLength
+        {
+            get { return (int)GetValue(SpeechMaxLengthProperty); }
+            set { SetValue(SpeechMaxLengthProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for SpeechMaxLength.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SpeechMaxLengthProperty =
+            DependencyProperty.Register("SpeechMaxLength", typeof(int), typeof(ReaderPanel), new PropertyMetadata(20000));
+
+
     }
 }

@@ -206,15 +206,23 @@ namespace SampleApp
 
         private async void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            var source = await Reader.GetChapterVoiceAsync(Reader.CurrentChapter, false, new Windows.Media.SpeechSynthesis.SpeechSynthesizer());
-            _playSource = source;
-            var player = new MediaPlayer();
-            player.Source = source;
-            player.MediaEnded += MediaPlayer_Ended;
-            MPE.SetMediaPlayer(player);
-            player.Play();
-            SpeechContainer.Visibility = Visibility.Visible;
-            MPE.Visibility = Visibility.Visible;
+            try
+            {
+                var source = await Reader.GetChapterVoiceAsync(Reader.CurrentChapter, false, new Windows.Media.SpeechSynthesis.SpeechSynthesizer());
+                _playSource = source;
+                var player = new MediaPlayer();
+                player.Source = source;
+                player.MediaEnded += MediaPlayer_Ended;
+                MPE.SetMediaPlayer(player);
+                player.Play();
+                SpeechContainer.Visibility = Visibility.Visible;
+                MPE.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                await new MessageDialog(ex.Message).ShowAsync();
+            }
+            
         }
 
         private async void MediaPlayer_Ended(MediaPlayer sender, object args)

@@ -503,8 +503,15 @@ namespace Richasy.Controls.Reader
             else if (chapter == null || !Chapters.Contains(chapter))
                 throw new ArgumentException("The chapter is not in current book");
 
+            // 将章节转化为语音合成流需要时间和额外的系统资源，不宜生成超量的文本
+            string content = GetReadText(chapter);
+            if (content.Length > SpeechMaxLength)
+                throw new Exception("The chapter detail text length is too large");
+
             if (CurrentChapter != chapter)
                 LoadChapter(chapter);
+
+            // 控件原本是按需加载页面，但考虑到用户会对生成的语音流进行进度调整，所以在生成合成语音时会将当前章节未渲染的部分全部渲染
             _readerView.RenderAllOverflows();
             bool isTempSyn = false;
             if (synthesizer == null)
@@ -514,7 +521,7 @@ namespace Richasy.Controls.Reader
             }
             synthesizer.Options.IncludeSentenceBoundaryMetadata = true;
             synthesizer.Options.IncludeWordBoundaryMetadata = true;
-            string content = GetReadText(chapter);
+            
             var stream = await synthesizer.SynthesizeTextToStreamAsync(content);
             MediaSource source = MediaSource.CreateFromStream(stream, stream.ContentType);
             if (isTempSyn)
