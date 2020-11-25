@@ -75,6 +75,11 @@ namespace Richasy.Controls.Reader
                 throw new NotSupportedException("File type not support (Currently only support txt and epub file)");
             }
             OpenStarting?.Invoke(this, EventArgs.Empty);
+            if (_tempSpeechStream != null)
+            {
+                _tempSpeechStream.Dispose();
+                _tempSpeechStream = null;
+            }
             bool hasExternalChapters = chapters != null && chapters.Count > 0;
             if (hasExternalChapters)
             {
@@ -152,6 +157,11 @@ namespace Richasy.Controls.Reader
             if (chapters == null || chapters.Count == 0 || style == null)
                 throw new ArgumentNullException();
             OpenStarting?.Invoke(this, EventArgs.Empty);
+            if (_tempSpeechStream != null)
+            {
+                _tempSpeechStream.Dispose();
+                _tempSpeechStream = null;
+            }
             ReaderType = _readerView.ReaderType = ReaderType.Custom;
             Chapters = chapters;
             ChapterLoaded?.Invoke(this, Chapters);
@@ -523,6 +533,7 @@ namespace Richasy.Controls.Reader
             synthesizer.Options.IncludeWordBoundaryMetadata = true;
             
             var stream = await synthesizer.SynthesizeTextToStreamAsync(content);
+            _tempSpeechStream = stream;
             MediaSource source = MediaSource.CreateFromStream(stream, stream.ContentType);
             if (isTempSyn)
                 synthesizer.Dispose();
@@ -542,6 +553,15 @@ namespace Richasy.Controls.Reader
             {
                 _readerView.Index = index;
             }
+        }
+
+        /// <summary>
+        /// 获取当前已经加载的朗读流
+        /// </summary>
+        /// <returns></returns>
+        public SpeechSynthesisStream GetCurrentSpeechStream()
+        {
+            return _tempSpeechStream;
         }
     }
 }

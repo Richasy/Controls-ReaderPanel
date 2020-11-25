@@ -194,11 +194,11 @@ namespace Richasy.Controls.Reader.Views
                 }
             }
             if (index == -1)
-                index = _tempOverflowList.Count-1;
+                index = _tempOverflowList.Count - 1;
             double temp = index / (_columns * 1.0);
             if (temp < 1)
                 return 0;
-            return Convert.ToInt32(Math.Ceiling(temp));
+            return Convert.ToInt32(Math.Floor(temp));
         }
     }
 }

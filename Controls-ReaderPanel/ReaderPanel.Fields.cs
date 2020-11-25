@@ -5,6 +5,7 @@ using Richasy.Controls.Reader.Views;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Windows.Media.SpeechSynthesis;
 using Windows.UI.Xaml.Controls;
 
 namespace Richasy.Controls.Reader
@@ -34,6 +35,8 @@ namespace Richasy.Controls.Reader
         private bool _isLoading = false;
 
         private int _tempEpubChapterIndex = 0;
+
+        internal SpeechSynthesisStream _tempSpeechStream = null;
 
         /// <summary>
         /// 章节划分正则表达式

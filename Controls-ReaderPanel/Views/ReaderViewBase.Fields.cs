@@ -2,6 +2,7 @@
 using Richasy.Controls.Reader.Models.Helpers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Windows.UI.Composition;
 using Windows.UI.Composition.Interactions;
 using Windows.UI.Input;
