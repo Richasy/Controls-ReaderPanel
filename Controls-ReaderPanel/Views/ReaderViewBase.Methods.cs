@@ -376,6 +376,11 @@ namespace Richasy.Controls.Reader.Views
             {
                 e.Handled = true;
             }
+            else
+            {
+                var temp = _displayBlock.GetPositionFromPoint(new Point(0, 0));
+                _displayBlock.Select(temp, temp);
+            }
             var position = e.GetPosition(this);
             TouchTapped?.Invoke(this, new PositionEventArgs(position, e.PointerDeviceType));
         }
