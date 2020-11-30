@@ -154,10 +154,11 @@ namespace Richasy.Controls.Reader.Models
             switch (node.Name.ToLower())
             {
                 case "#text":
+                case "span":
                     if (!string.IsNullOrEmpty(node.InnerText.Trim()))
                     {
                         p.TextIndent = Style.TextIndent * Style.FontSize;
-                        p.Inlines.Add(new Run() { Text = node.GetDirectInnerText().Trim() });
+                        p.Inlines.Add(new Run() { Text = WebUtility.HtmlDecode(node.GetDirectInnerText().Trim()) });
                     }
                     break;
                 case "hr":
@@ -169,16 +170,17 @@ namespace Richasy.Controls.Reader.Models
                     if (image != null)
                         p.Inlines.Add(image);
                     break;
-                case "p":
                 case "div":
                 case "section":
                 case "nav":
                 case "aside":
                 case "article":
                 case "header":
-                case "span":
                     RenderBlocks.Add(parent);
                     await RenderAsync(node, null);
+                    break;
+                case "p":
+                    await RenderAsync(node, p);
                     break;
                 case "h1":
                 case "h2":
@@ -193,7 +195,12 @@ namespace Richasy.Controls.Reader.Models
                     break;
                 case "ol":
                 case "ul":
-                    CreateList(node, p, node.Name.ToLower() == "ol");
+                    //CreateList(node, p, node.Name.ToLower() == "ol");
+                    if (!string.IsNullOrEmpty(node.InnerText.Trim()))
+                    {
+                        p.TextIndent = Style.TextIndent * Style.FontSize;
+                        p.Inlines.Add(new Run() { Text = WebUtility.HtmlDecode(node.GetDirectInnerText().Trim()) });
+                    }
                     break;
                 case "b":
                 case "bold":
@@ -236,7 +243,7 @@ namespace Richasy.Controls.Reader.Models
                     p.Inlines.Add(CreateCodeInline(node));
                     break;
                 default:
-                    p.Inlines.Add(new Run() { Text = node.GetDirectInnerText().Trim() });
+                    p.Inlines.Add(new Run() { Text = WebUtility.HtmlDecode(node.GetDirectInnerText().Trim()) });
                     break;
             }
             return p;
@@ -251,12 +258,14 @@ namespace Richasy.Controls.Reader.Models
             {
                 BorderBrush = new SolidColorBrush(Style.Foreground),
                 Padding = new Thickness(5, 3, 5, 3),
-                BorderThickness = new Thickness(1)
+                BorderThickness = new Thickness(1),
+                Margin = new Thickness(Style.FontSize / 2.0, 0, Style.FontSize / 2.0, 0)
             };
             var textBlock = new TextBlock
             {
                 FontSize = Style.FontSize / 1.5,
-                Text = WebUtility.HtmlDecode(node.InnerText)
+                Text = WebUtility.HtmlDecode(node.InnerText),
+                Foreground = new SolidColorBrush(Style.Foreground)
             };
             border.Child = textBlock;
             var inlineContainer = new InlineUIContainer();
@@ -337,7 +346,7 @@ namespace Richasy.Controls.Reader.Models
             else
                 args.Link = link;
             var hyp = new Hyperlink();
-            var run = new Run() { Text = node.InnerText };
+            var run = new Run() { Text = " " + node.InnerText + " " };
             if (isSup)
             {
                 run.FontSize = Style.FontSize / 1.5;
@@ -381,7 +390,7 @@ namespace Richasy.Controls.Reader.Models
             var image = new Image();
             string base64 = node.Attributes["src"].Value;
             bool isEmptyImage = false;
-            BitmapImage bitmap = null;
+            BitmapImage bitmap = new BitmapImage();
             try
             {
                 bitmap = await Base64ToImg(base64);
@@ -438,24 +447,6 @@ namespace Richasy.Controls.Reader.Models
 
         private Inline CreateBlockquote(HtmlNode node)
         {
-            //var container = new InlineUIContainer();
-            //var border = new Border();
-            //border.BorderBrush = new SolidColorBrush(Style.BlockquoteBorderColor);
-            //border.BorderThickness = new Thickness(8, 0, 0, 0);
-            //border.Background = new SolidColorBrush(Style.BlockquoteBorderColor) { Opacity = 0.2 };
-            //border.Padding = new Thickness(Style.FontSize / 2.0);
-            //border.Margin = new Thickness(0, Style.FontSize / 2.0, 0, Style.FontSize);
-            //border.Child = new TextBlock()
-            //{
-            //    Text = node.InnerText.Trim(),
-            //    Foreground = new SolidColorBrush(Style.Foreground),
-            //    FontSize = Style.FontSize / 1.1,
-            //    LineHeight = Style.LineHeight / 1.1,
-            //    TextWrapping = TextWrapping.Wrap,
-            //    IsTextSelectionEnabled = true
-            //};
-            //container.Child = border;
-            //return container;
             return new Run
             {
                 Text = node.InnerText.Trim(),
@@ -474,16 +465,26 @@ namespace Richasy.Controls.Reader.Models
                 int order = 1;
                 HtmlNode temp = node;
                 string parentList = isOrder ? "ol" : "ul";
-                while (temp.ParentNode.Name.ToLower() != parentList)
+                if (temp.ParentNode != null)
                 {
-                    temp = temp.ParentNode;
-                    gutter += 1;
+                    while (temp.ParentNode.Name.ToLower() != parentList)
+                    {
+                        temp = temp.ParentNode;
+                        gutter += 1;
+                        if (temp.ParentNode == null)
+                            break;
+                    }
                 }
                 temp = node;
-                while (temp.PreviousSibling.Name.ToLower() == "li")
+                if (temp.PreviousSibling != null)
                 {
-                    order += 1;
-                    temp = temp.PreviousSibling;
+                    while (temp.PreviousSibling.Name.ToLower() == "li")
+                    {
+                        order += 1;
+                        temp = temp.PreviousSibling;
+                        if (temp.PreviousSibling == null)
+                            break;
+                    }
                 }
                 p.Inlines.Add(new LineBreak());
                 if (node.HasChildNodes)

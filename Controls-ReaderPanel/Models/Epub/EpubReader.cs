@@ -17,11 +17,11 @@ namespace Richasy.Controls.Reader.Models.Epub
         public static async Task<EpubBook> Read(StorageFile file, Encoding encoding)
         {
             if (encoding == null) encoding = Constants.DefaultEncoding;
-            using (var stream=await file.OpenStreamForReadAsync())
+            using (var stream = await file.OpenStreamForReadAsync())
             {
                 return Read(stream, false, encoding);
             }
-            
+
         }
 
         public static EpubBook Read(byte[] epubData, Encoding encoding = null)
@@ -68,6 +68,11 @@ namespace Richasy.Controls.Reader.Models.Epub
                 book.SpecialResources = LoadSpecialResources(archive, book);
                 book.CoverImage = LoadCoverImage(book);
                 book.TableOfContents = LoadChapters(book);
+                foreach (var chapter in book.TableOfContents)
+                {
+                    if (string.IsNullOrEmpty(chapter.AbsolutePath))
+                        chapter.AbsolutePath = book.SpecialResources.HtmlInReadingOrder.First().AbsolutePath;
+                }
                 return book;
             }
         }
@@ -160,6 +165,21 @@ namespace Richasy.Controls.Reader.Models.Epub
                     result.Add(chapter);
 
                     previous = chapter.SubChapters.Any() ? chapter.SubChapters.Last() : chapter;
+                }
+                else
+                {
+                    if (li.Element(ns + NavElements.Ol) != null)
+                    {
+                        var titleTextElement = li.Descendants().FirstOrDefault(e => !string.IsNullOrWhiteSpace(e.Value));
+                        if (titleTextElement != null)
+                        {
+                            chapter.Title = titleTextElement.Value;
+                        }
+                        chapter.AbsolutePath = "";
+                        chapter.SubChapters = LoadChaptersFromNav(navAbsolutePath, li, chapter);
+                        result.Add(chapter);
+                        previous = chapter;
+                    }
                 }
             }
 

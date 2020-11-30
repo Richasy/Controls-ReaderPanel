@@ -17,6 +17,7 @@ namespace Richasy.Controls.Reader.Models.Epub.Format
         public static readonly string Ol = "ol";
         public static readonly string Li = "li";
         public static readonly string A = "a";
+        public static readonly string Span = "span";
     }
 
     public class NavDocument
