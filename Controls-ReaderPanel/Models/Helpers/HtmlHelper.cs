@@ -9,15 +9,12 @@ using System.Net;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Windows.Gaming.Input.ForceFeedback;
-using Windows.System;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Shapes;
 
 namespace Richasy.Controls.Reader.Models
 {
@@ -210,7 +207,7 @@ namespace Richasy.Controls.Reader.Models
                 case "a":
                     if (node.ChildNodes.Count >= 1 && (node.FirstChild.Name.Equals("img", StringComparison.OrdinalIgnoreCase)))
                     {
-                        var hyperImage = await CreateImageAsync(node.FirstChild, true);
+                        var hyperImage = await CreateImageAsync(node.FirstChild, true, node);
                         if (hyperImage != null)
                             p.Inlines.Add(hyperImage);
                     }
@@ -325,39 +322,7 @@ namespace Richasy.Controls.Reader.Models
             }
         }
 
-        private Inline CreateHyperLink(HtmlNode node, bool isSup = false)
-        {
-            if (string.IsNullOrEmpty(node.InnerText))
-                return null;
-            string link = node.GetAttributeValue("href", "none");
-            var args = new LinkEventArgs();
-            if (link.Contains('#'))
-            {
-                var sp = link.Split('#', StringSplitOptions.RemoveEmptyEntries);
-                if (sp.Length > 1)
-                    args.FileName = sp[0];
-                args.Id = sp.Last();
-            }
-            else if (!link.Contains("://"))
-            {
-                string name = link.Split('/').Last();
-                args.FileName = name;
-            }
-            else
-                args.Link = link;
-            var hyp = new Hyperlink();
-            var run = new Run() { Text = " " + node.InnerText + " " };
-            if (isSup)
-            {
-                run.FontSize = Style.FontSize / 1.5;
-            }
-            hyp.Inlines.Add(run);
-            hyp.Click += (_s, _e) =>
-            {
-                LinkTapped?.Invoke(_s, args);
-            };
-            return hyp;
-        }
+
 
         private Inline CreateBold(HtmlNode node)
         {
@@ -384,11 +349,52 @@ namespace Richasy.Controls.Reader.Models
             return container;
         }
 
-        private async Task<Inline> CreateImageAsync(HtmlNode node, bool isInline = false)
+        private Inline CreateHyperLink(HtmlNode node, bool isSup = false)
+        {
+            if (string.IsNullOrEmpty(node.InnerText))
+                return null;
+            var args = CreateLinkArgs(node);
+            var hyp = new Hyperlink();
+            var run = new Run() { Text = " " + node.InnerText + " " };
+            if (isSup)
+            {
+                run.FontSize = Style.FontSize / 1.5;
+            }
+            hyp.Inlines.Add(run);
+            hyp.Click += (_s, _e) =>
+            {
+                LinkTapped?.Invoke(_s, args);
+            };
+            return hyp;
+        }
+
+        private LinkEventArgs CreateLinkArgs(HtmlNode node)
+        {
+            string link = node.GetAttributeValue("href", "none");
+            var args = new LinkEventArgs();
+            if (link.Contains('#'))
+            {
+                var sp = link.Split('#', StringSplitOptions.RemoveEmptyEntries);
+                if (sp.Length > 1)
+                    args.FileName = sp[0];
+                args.Id = sp.Last();
+            }
+            else if (!link.Contains("://"))
+            {
+                string name = link.Split('/').Last();
+                args.FileName = name;
+            }
+            else
+                args.Link = link;
+            return args;
+        }
+
+        private async Task<Inline> CreateImageAsync(HtmlNode node, bool isInline = false, HtmlNode linkNode = null)
         {
             var container = new InlineUIContainer();
             var image = new Image();
             string base64 = node.Attributes["src"].Value;
+            string alt = node.Attributes["alt"]?.Value ?? "";
             bool isEmptyImage = false;
             BitmapImage bitmap = new BitmapImage();
             try
@@ -416,11 +422,23 @@ namespace Richasy.Controls.Reader.Models
                 image.Width = 82.5;
                 image.Height = 100;
             }
-            image.Tapped += (_s, _e) =>
+            if (linkNode == null)
             {
-                _e.Handled = true;
-                ImageTapped?.Invoke(_s, new ImageEventArgs(base64));
-            };
+                image.Tapped += (_s, _e) =>
+                {
+                    _e.Handled = true;
+                    ImageTapped?.Invoke(_s, new ImageEventArgs(base64, alt));
+                };
+            }
+            else
+            {
+                var args = CreateLinkArgs(node);
+                image.Tapped += (_s, _e) =>
+                {
+                    _e.Handled = true;
+                    LinkTapped?.Invoke(_s, args);
+                };
+            }
             container.Child = image;
             return container;
         }

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Threading.Tasks;
 using Windows.Foundation;
+using Windows.Foundation.Metadata;
 using Windows.UI.Composition;
 using Windows.UI.Composition.Interactions;
 using Windows.UI.Input;
@@ -80,7 +81,15 @@ namespace Richasy.Controls.Reader.Views
             {
                 UpdateContentLayout();
                 await Task.Delay(100);
-                _tracker.TryUpdatePosition(new Vector3((float)(ParentWidth * index)), 0f, 0f);
+                try
+                {
+                    _tracker.TryUpdatePosition(new Vector3((float)(ParentWidth * index), 0, 0));
+                }
+                catch (Exception)
+                {
+                    OffsetAnimation.InsertKeyFrame(1f, new Vector3((float)(ParentWidth * index), 0f, 0f));
+                    _tracker.TryUpdatePositionWithAnimation(OffsetAnimation);
+                }
             }
         }
 
