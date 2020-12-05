@@ -67,14 +67,24 @@ namespace Richasy.Controls.Reader.Models.Epub.Format.Readers
         {
             if (element == null) throw new ArgumentNullException(nameof(element));
             if (element.Name != NcxElements.NavPoint) throw new ArgumentException("The element is not <navPoint>", nameof(element));
-
+            string id = (string)element.Attribute(NcxNavPoint.Attributes.Id);
+            string cla = (string)element.Attribute(NcxNavPoint.Attributes.Class);
+            string navText = element.Element(NcxElements.NavLabel)?.Element(NcxElements.Text)?.Value;
+            string src = (string)element.Element(NcxElements.Content)?.Attribute(NcxNavPoint.Attributes.ContentSrc);
+            int? order = -1;
+            try
+            {
+                order = (int?)element.Attribute(NcxNavPoint.Attributes.PlayOrder);
+            }
+            catch (Exception)
+            {}
             return new NcxNavPoint
             {
-                Id = (string)element.Attribute(NcxNavPoint.Attributes.Id),
-                Class = (string)element.Attribute(NcxNavPoint.Attributes.Class),
-                NavLabelText = element.Element(NcxElements.NavLabel)?.Element(NcxElements.Text)?.Value,
-                ContentSrc = (string)element.Element(NcxElements.Content)?.Attribute(NcxNavPoint.Attributes.ContentSrc),
-                PlayOrder = (int?)element.Attribute(NcxNavPoint.Attributes.PlayOrder),
+                Id = id,
+                Class = cla,
+                NavLabelText = navText,
+                ContentSrc = src,
+                PlayOrder = order,
                 NavPoints = element.Elements(NcxElements.NavPoint).AsObjectList(ReadNavPoint)
             };
         }
