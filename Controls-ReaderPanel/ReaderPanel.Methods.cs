@@ -343,12 +343,13 @@ namespace Richasy.Controls.Reader
             return content;
         }
 
-        private void SetProgress(Chapter chapter, int addonLength = 0)
+        private async void SetProgress(Chapter chapter, int addonLength = 0)
         {
             if (Chapters == null || Chapters.Count == 0 || !Chapters.Any(p => p.Equals(chapter)))
                 throw new ArgumentOutOfRangeException("The chapter list don't have this chapter");
             if (chapter != CurrentChapter)
                 ChapterChanged?.Invoke(this, chapter);
+
             CurrentChapter = Chapters.Where(p => p.Equals(chapter)).FirstOrDefault();
             if (ReaderType == Enums.ReaderType.Txt)
             {
@@ -358,13 +359,13 @@ namespace Richasy.Controls.Reader
                     content = _txtContent.Substring(CurrentChapter.StartLength);
                 else
                     content = _txtContent.Substring(CurrentChapter.StartLength, Chapters[nextIndex].StartLength - CurrentChapter.StartLength);
-                _readerView.SetContent(content, Enums.ReaderStartMode.First, addonLength);
+                await _readerView.SetContent(content, Enums.ReaderStartMode.First, addonLength);
             }
             else if (ReaderType == Enums.ReaderType.Custom)
             {
                 var detail = CustomChapterDetailList.Where(p => p.Index == CurrentChapter.Index).FirstOrDefault();
                 if (detail != null)
-                    _readerView.SetContent(detail.GetReadContent(), Enums.ReaderStartMode.First, addonLength);
+                    await _readerView.SetContent(detail.GetReadContent(), Enums.ReaderStartMode.First, addonLength);
                 else
                     CustomContentRequest?.Invoke(this, new CustomRequestEventArgs(Enums.ReaderStartMode.First, CurrentChapter, addonLength));
             }
@@ -379,7 +380,12 @@ namespace Richasy.Controls.Reader
                 }
                 else
                     content = chapter.Title;
-                _readerView.SetContent(content, Enums.ReaderStartMode.First, addonLength);
+                await _readerView.SetContent(content, ReaderStartMode.First, addonLength);
+                if (IsBeta)
+                {
+                    await Task.Delay(500);
+                    RelocateChapter(chapter);
+                }
             }
             RaiseProgressChanged(addonLength);
         }

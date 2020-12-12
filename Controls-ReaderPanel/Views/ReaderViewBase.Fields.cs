@@ -28,6 +28,7 @@ namespace Richasy.Controls.Reader.Views
         internal EventDelayer CreateContentDelayer;
 
         internal bool _isSizeChangeLoaded = false;
+        internal bool _needVirtual = true;
 
         internal List<RenderOverflow> _tempOverflowList;
 

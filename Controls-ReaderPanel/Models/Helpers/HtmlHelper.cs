@@ -24,12 +24,15 @@ namespace Richasy.Controls.Reader.Models
         private ReaderStyle Style { get; set; }
 
         public List<Block> RenderBlocks { get; private set; }
+        public List<IdIndex> IdList { get; private set; }
 
         public EventHandler<LinkEventArgs> LinkTapped;
         public EventHandler<ImageEventArgs> ImageTapped;
 
         private HtmlDocument HtmlDocument = new HtmlDocument();
         private List<EpubByteFile> Images;
+
+        private int _readPointer = 0;
 
         public string TotalInnerText { get; private set; }
 
@@ -44,6 +47,8 @@ namespace Richasy.Controls.Reader.Models
         {
             HtmlContent = GetBodyString(html);
             RenderBlocks = new List<Block>();
+            IdList = new List<IdIndex>();
+            _readPointer = 0;
             HtmlDocument.LoadHtml(HtmlContent);
             TotalInnerText = HtmlDocument.DocumentNode.InnerText;
 
@@ -88,6 +93,7 @@ namespace Richasy.Controls.Reader.Models
                         return;
                     else
                     {
+                        _readPointer += text.Length;
                         if (parent == null)
                         {
                             var p = new Paragraph();
@@ -103,10 +109,12 @@ namespace Richasy.Controls.Reader.Models
                             p.Margin = new Thickness(0, 0, 0, Style.SegmentSpacing);
                             p.Inlines.Add(new Run() { Text = text });
                         }
+                        _readPointer += Convert.ToInt32(Style.TextIndent);
                     }
                 }
                 else
                 {
+                    CheckNodeId(node);
                     if (node.ChildNodes.Count > 0)
                     {
                         foreach (var child in node.ChildNodes)
@@ -148,14 +156,21 @@ namespace Richasy.Controls.Reader.Models
                 parent = new Paragraph();
             var p = parent as Paragraph;
             p.Margin = new Thickness(0, 0, 0, Style.SegmentSpacing);
+            
             switch (node.Name.ToLower())
             {
                 case "#text":
-                case "span":
                     if (!string.IsNullOrEmpty(node.InnerText.Trim()))
                     {
-                        p.TextIndent = Style.TextIndent * Style.FontSize;
-                        p.Inlines.Add(new Run() { Text = WebUtility.HtmlDecode(node.GetDirectInnerText().Trim()) });
+                        string text = node.GetDirectInnerText();
+                        if (!string.IsNullOrEmpty(text))
+                        {
+                            text = text.Trim();
+                            _readPointer += text.Length;
+                            p.TextIndent = Style.TextIndent * Style.FontSize;
+                            p.Inlines.Add(new Run() { Text = WebUtility.HtmlDecode(text) });
+                            _readPointer += Convert.ToInt32(Style.TextIndent);
+                        }
                     }
                     break;
                 case "hr":
@@ -177,6 +192,7 @@ namespace Richasy.Controls.Reader.Models
                     await RenderAsync(node, null);
                     break;
                 case "p":
+                case "span":
                     await RenderAsync(node, p);
                     break;
                 case "h1":
@@ -186,9 +202,11 @@ namespace Richasy.Controls.Reader.Models
                 case "h5":
                 case "h6":
                     p.Inlines.Add(CreateHeader(node));
+                    _readPointer += Convert.ToInt32(Style.TextIndent);
                     break;
                 case "blockquote":
                     p.Inlines.Add(CreateBlockquote(node));
+                    _readPointer += Convert.ToInt32(Style.TextIndent);
                     break;
                 case "ol":
                 case "ul":
@@ -197,6 +215,7 @@ namespace Richasy.Controls.Reader.Models
                     {
                         p.TextIndent = Style.TextIndent * Style.FontSize;
                         p.Inlines.Add(new Run() { Text = WebUtility.HtmlDecode(node.GetDirectInnerText().Trim()) });
+                        _readPointer += Convert.ToInt32(Style.TextIndent);
                     }
                     break;
                 case "b":
@@ -216,6 +235,7 @@ namespace Richasy.Controls.Reader.Models
                         var link = CreateHyperLink(node);
                         if (link != null)
                             p.Inlines.Add(link);
+                        _readPointer += Convert.ToInt32(Style.TextIndent);
                     }
 
                     break;
@@ -240,9 +260,13 @@ namespace Richasy.Controls.Reader.Models
                     p.Inlines.Add(CreateCodeInline(node));
                     break;
                 default:
-                    p.Inlines.Add(new Run() { Text = WebUtility.HtmlDecode(node.GetDirectInnerText().Trim()) });
+                    string other = WebUtility.HtmlDecode(node.GetDirectInnerText().Trim());
+                    _readPointer += other.Length;
+                    p.Inlines.Add(new Run() { Text = other });
+                    _readPointer += Convert.ToInt32(Style.TextIndent);
                     break;
             }
+            CheckNodeId(node);
             return p;
         }
 
@@ -258,10 +282,12 @@ namespace Richasy.Controls.Reader.Models
                 BorderThickness = new Thickness(1),
                 Margin = new Thickness(Style.FontSize / 2.0, 0, Style.FontSize / 2.0, 0)
             };
+            string text = WebUtility.HtmlDecode(node.InnerText);
+            _readPointer += text.Length;
             var textBlock = new TextBlock
             {
                 FontSize = Style.FontSize / 1.5,
-                Text = WebUtility.HtmlDecode(node.InnerText),
+                Text = text,
                 Foreground = new SolidColorBrush(Style.Foreground)
             };
             border.Child = textBlock;
@@ -272,10 +298,12 @@ namespace Richasy.Controls.Reader.Models
         }
         private Inline CreateItalic(HtmlNode node)
         {
-            if (string.IsNullOrEmpty(node.InnerText.Trim()))
+            string text = node.InnerText.Trim();
+            if (string.IsNullOrEmpty(text))
                 return null;
             Span s = new Span();
-            s.Inlines.Add(new Run() { Text = node.InnerText.Trim() + " ", FontStyle = FontStyle.Italic });
+            _readPointer += text.Length + 1;
+            s.Inlines.Add(new Run() { Text = text + " ", FontStyle = FontStyle.Italic });
             return s;
         }
         private Inline CreateUnderline(HtmlNode node)
@@ -283,7 +311,9 @@ namespace Richasy.Controls.Reader.Models
             if (string.IsNullOrEmpty(node.InnerText.Trim()))
                 return null;
             Span s = new Span();
-            s.Inlines.Add(new Run() { Text = node.InnerText.Trim(), TextDecorations = TextDecorations.Underline });
+            string text = node.InnerText.Trim();
+            _readPointer += text.Length;
+            s.Inlines.Add(new Run() { Text = text, TextDecorations = TextDecorations.Underline });
             return s;
         }
         private Inline CreateStrikeThrough(HtmlNode node)
@@ -291,7 +321,9 @@ namespace Richasy.Controls.Reader.Models
             if (string.IsNullOrEmpty(node.InnerText.Trim()))
                 return null;
             Span s = new Span();
-            s.Inlines.Add(new Run() { Text = node.InnerText.Trim(), TextDecorations = TextDecorations.Strikethrough });
+            string text = node.InnerText.Trim();
+            _readPointer += text.Length;
+            s.Inlines.Add(new Run() { Text = text, TextDecorations = TextDecorations.Strikethrough });
             return s;
         }
 
@@ -299,7 +331,9 @@ namespace Richasy.Controls.Reader.Models
         {
             if (string.IsNullOrEmpty(node.InnerText.Trim()))
                 return null;
-            var run = new Run() { Text = node.InnerText.Trim() };
+            string text = node.InnerText.Trim();
+            _readPointer += text.Length;
+            var run = new Run() { Text = text };
             Typography.SetVariants(run, FontVariants.Subscript);
             return run;
         }
@@ -316,7 +350,9 @@ namespace Richasy.Controls.Reader.Models
             {
                 if (string.IsNullOrEmpty(node.InnerText.Trim()))
                     return null;
-                var run = new Run() { Text = node.InnerText.Trim() };
+                string text = node.InnerText.Trim();
+                _readPointer += text.Length;
+                var run = new Run() { Text = text };
                 Typography.SetVariants(run, FontVariants.Superscript);
                 return run;
             }
@@ -329,7 +365,9 @@ namespace Richasy.Controls.Reader.Models
             if (string.IsNullOrEmpty(node.InnerText.Trim()))
                 return null;
             Bold bold = new Bold();
-            bold.Inlines.Add(new Run() { Text = node.InnerText.Trim() });
+            string text = node.InnerText.Trim();
+            _readPointer += text.Length;
+            bold.Inlines.Add(new Run() { Text = text });
             return bold;
         }
 
@@ -355,7 +393,9 @@ namespace Richasy.Controls.Reader.Models
                 return null;
             var args = CreateLinkArgs(node);
             var hyp = new Hyperlink();
-            var run = new Run() { Text = " " + node.InnerText + " " };
+            string text = " " + node.InnerText.Trim() + " ";
+            _readPointer += text.Length;
+            var run = new Run() { Text = text };
             if (isSup)
             {
                 run.FontSize = Style.FontSize / 1.5;
@@ -409,6 +449,7 @@ namespace Richasy.Controls.Reader.Models
             image.MaxWidth = bitmap.PixelWidth;
             image.MaxHeight = bitmap.PixelHeight;
             image.Stretch = Stretch.Uniform;
+            _readPointer++;
             if (!isInline)
                 image.Margin = new Thickness(0, Style.FontSize, 0, Style.FontSize);
             else
@@ -451,9 +492,11 @@ namespace Richasy.Controls.Reader.Models
             border.BorderThickness = new Thickness(0, 0, 0, 2);
             border.Padding = new Thickness(0, 0, 0, Style.FontSize / 2.0);
             int addon = Convert.ToInt32(node.Name.Replace("h", "", StringComparison.OrdinalIgnoreCase));
+            string text = node.InnerText.Trim();
+            _readPointer += text.Length;
             border.Child = new TextBlock()
             {
-                Text = node.InnerText.Trim(),
+                Text = text,
                 Foreground = new SolidColorBrush(Style.Foreground),
                 FontSize = Style.FontSize + addon,
                 TextWrapping = TextWrapping.Wrap,
@@ -465,13 +508,23 @@ namespace Richasy.Controls.Reader.Models
 
         private Inline CreateBlockquote(HtmlNode node)
         {
+            string text = node.InnerText.Trim();
+            _readPointer += text.Length;
             return new Run
             {
-                Text = node.InnerText.Trim(),
+                Text = text,
                 FontSize = Style.FontSize / 1.1,
                 FontStyle = FontStyle.Oblique
             };
 
+        }
+
+        private void CheckNodeId(HtmlNode node)
+        {
+            if (!string.IsNullOrEmpty(node.Id))
+            {
+                IdList.Add(new IdIndex(node.Id, _readPointer));
+            }
         }
 
         private void CreateList(HtmlNode node, Block parent, bool isOrder = false)
@@ -572,6 +625,21 @@ namespace Richasy.Controls.Reader.Models
             {
                 return null;
             }
+        }
+    }
+
+    internal class IdIndex
+    {
+        public string Id { get; set; }
+        public int ContentStart { get; private set; }
+        public IdIndex()
+        {
+
+        }
+        public IdIndex(string id, int start)
+        {
+            Id = id;
+            ContentStart = start;
         }
     }
 }

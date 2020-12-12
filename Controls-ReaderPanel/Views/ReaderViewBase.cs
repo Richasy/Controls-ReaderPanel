@@ -64,7 +64,12 @@ namespace Richasy.Controls.Reader.Views
             base.OnApplyTemplate();
         }
 
-        public async void SetContent(string Content, ReaderStartMode mode = ReaderStartMode.First, int startLength = 0)
+        public void SetVirtualMode(bool needVirtual)
+        {
+            _needVirtual = needVirtual;
+        }
+
+        public async Task SetContent(string Content, ReaderStartMode mode = ReaderStartMode.First, int startLength = 0)
         {
             _isSizeChangeLoaded = false;
             _content = Content;
@@ -88,16 +93,38 @@ namespace Richasy.Controls.Reader.Views
             }
             if (startLength != 0)
             {
-                int childrenCount = _tempOverflowList.Count;
-                var signNumber = Content.Length / childrenCount;
-                index = Convert.ToInt32(Math.Floor(startLength / (signNumber * 1.0)));
-                index = Convert.ToInt32(Math.Round(index / (_columns * 1.0)));
-                index = index > Count - 1 ? Count - 1 : index;
+                index = AddonOffset(startLength);
             }
             Index = index;
             GoToIndex(Index, false);
             IsCoreSelectedChanged = false;
             LoadingStatusChanged?.Invoke(this, LoadingStatus.Completed);
+        }
+
+        public int AddonOffset(int length)
+        {
+            int index = 0;
+            if (_needVirtual)
+            {
+                int childrenCount = _tempOverflowList.Count;
+                var signNumber = _content.Length / childrenCount;
+                index = Convert.ToInt32(Math.Floor(length / (signNumber * 1.0)));
+            }
+            else
+            {
+                for (int i = 0; i < _tempOverflowList.Count; i++)
+                {
+                    var item = _tempOverflowList[i];
+                    if (item.Element is RichTextBlockOverflow of && of.ContentStart.Offset > length)
+                    {
+                        index = i;
+                        break;
+                    }
+                }
+            }
+            index = Convert.ToInt32(Math.Round(index / (_columns * 1.0)));
+            index = index > Count - 1 ? Count - 1 : index;
+            return index;
         }
 
         protected virtual async Task CreateContent()
@@ -139,12 +166,18 @@ namespace Richasy.Controls.Reader.Views
                 tmp.Width = actualWidth;
                 tmp.Height = actualHeight;
                 _displayContainer.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(singleWidth) });
+                if (!_needVirtual)
+                {
+                    _displayContainer.Children.Add(tmp);
+                    Grid.SetColumn(tmp, _displayContainer.ColumnDefinitions.Count - 1);
+                }
                 count++;
 
                 tmp.Measure(new Size(singleWidth, singleHeight));
                 renderTarget = tmp;
                 hasOverflow = tmp.HasOverflowContent;
-                _tempOverflowList.Add(new RenderOverflow(false, tmp));
+                
+                _tempOverflowList.Add(new RenderOverflow(!_needVirtual, tmp));
             }
 
             Count = Convert.ToInt32(Math.Ceiling(count / (_columns * 1.0)));

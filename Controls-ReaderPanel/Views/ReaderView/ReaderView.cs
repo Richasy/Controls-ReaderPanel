@@ -74,6 +74,7 @@ namespace Richasy.Controls.Reader.Views
         private void RenderTxtContent(string content)
         {
             if (string.IsNullOrEmpty(content)) return;
+            _needVirtual = true;
             var firstLine = content.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).First();
             var title = new Paragraph();
             title.Inlines.Add(new Run()
@@ -115,6 +116,7 @@ namespace Richasy.Controls.Reader.Views
         {
             if (inputStyle != null)
                 ViewStyle = inputStyle;
+            _needVirtual = false;
             var style = ViewStyle;
             foreach (var item in _displayContainer.Children)
             {
@@ -137,6 +139,7 @@ namespace Richasy.Controls.Reader.Views
         private async Task RenderEpubContent(string content)
         {
             if (string.IsNullOrEmpty(content)) return;
+            _needVirtual = false;
             await helper.InitAsync(content);
             if (helper.RenderBlocks.Count > 0)
             {
@@ -157,6 +160,16 @@ namespace Richasy.Controls.Reader.Views
                     }
                 }
             }
+        }
+
+        public int GetIdAddonLength(string id)
+        {
+            if(_displayBlock.Blocks!=null && _displayBlock.Blocks.Count > 0)
+            {
+                var item = helper.IdList.Where(p => p.Id == id).FirstOrDefault();
+                return item == null ? 0 : item.ContentStart;
+            }
+            return 0;
         }
     }
 }

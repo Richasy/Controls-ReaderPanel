@@ -91,6 +91,7 @@ namespace Richasy.Controls.Reader
             if (extension.ToLower() == ".txt")
             {
                 ReaderType = _readerView.ReaderType = ReaderType.Txt;
+                _readerView.SetVirtualMode(true);
                 if (!hasExternalChapters)
                 {
                     Chapters = await GetTxtChapters(bookFile);
@@ -100,6 +101,7 @@ namespace Richasy.Controls.Reader
             }
             else
             {
+                _readerView.SetVirtualMode(false);
                 ReaderType = _readerView.ReaderType = ReaderType.Epub;
                 _epubContent = await EpubReader.Read(bookFile, Encoding.Default);
                 if (!hasExternalChapters)
@@ -157,6 +159,7 @@ namespace Richasy.Controls.Reader
             if (chapters == null || chapters.Count == 0 || style == null)
                 throw new ArgumentNullException();
             OpenStarting?.Invoke(this, EventArgs.Empty);
+            _readerView.SetVirtualMode(true);
             if (_tempSpeechStream != null)
             {
                 _tempSpeechStream.Dispose();
@@ -260,7 +263,7 @@ namespace Richasy.Controls.Reader
         /// 定位到指定文件名的章节（EPUB）
         /// </summary>
         /// <param name="fileName"></param>
-        public void LocateToSpecificFile(string fileName)
+        public async void LocateToSpecificFile(string fileName)
         {
             if (ReaderType != Enums.ReaderType.Epub)
                 throw new NotSupportedException("This method can only use in epub view");
@@ -281,7 +284,7 @@ namespace Richasy.Controls.Reader
             }
             else
                 throw new FileNotFoundException("File not found");
-            _readerView.SetContent(content, Enums.ReaderStartMode.First, 0);
+            await _readerView.SetContent(content, Enums.ReaderStartMode.First, 0);
             var chapter = GetLastEpubChapter(info);
             if (!chapter.Equals(CurrentChapter))
             {
@@ -383,9 +386,9 @@ namespace Richasy.Controls.Reader
         /// </summary>
         /// <param name="content">文本内容</param>
         /// <param name="mode">起始位置</param>
-        public void SetCustomContent(string content, ReaderStartMode mode)
+        public async void SetCustomContent(string content, ReaderStartMode mode)
         {
-            _readerView.SetContent(content, mode);
+            await _readerView.SetContent(content, mode);
         }
 
         /// <summary>
@@ -394,9 +397,9 @@ namespace Richasy.Controls.Reader
         /// <param name="detail">章节详情</param>
         /// <param name="mode">起始位置</param>
         /// <param name="addonLength">偏移值</param>
-        public void SetCustomContent(ChapterDetail detail, ReaderStartMode mode, int addonLength = 0)
+        public async void SetCustomContent(ChapterDetail detail, ReaderStartMode mode, int addonLength = 0)
         {
-            _readerView.SetContent(detail.GetReadContent(), mode, addonLength);
+            await _readerView.SetContent(detail.GetReadContent(), mode, addonLength);
         }
 
         /// <summary>
@@ -562,6 +565,29 @@ namespace Richasy.Controls.Reader
         public SpeechSynthesisStream GetCurrentSpeechStream()
         {
             return _tempSpeechStream;
+        }
+
+        /// <summary>
+        /// 重定位章节位置
+        /// </summary>
+        /// <param name="chapter">章节</param>
+        public void RelocateChapter(Chapter chapter)
+        {
+            if (ReaderType==ReaderType.Epub && !string.IsNullOrWhiteSpace(chapter.Hash))
+            {
+                int length = _readerView.GetIdAddonLength(chapter.Hash);
+                int index = _readerView.AddonOffset(length);
+                _readerView.Index = index;
+                _readerView.GoToIndex(index, false);
+            }
+        }
+
+        /// <summary>
+        /// 开启测试功能
+        /// </summary>
+        public void OpenBeta()
+        {
+            this.IsBeta = true;
         }
     }
 }

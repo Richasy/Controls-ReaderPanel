@@ -38,6 +38,8 @@ namespace Richasy.Controls.Reader
 
         internal SpeechSynthesisStream _tempSpeechStream = null;
 
+        private bool IsBeta = false;
+
         /// <summary>
         /// 章节划分正则表达式
         /// </summary>
