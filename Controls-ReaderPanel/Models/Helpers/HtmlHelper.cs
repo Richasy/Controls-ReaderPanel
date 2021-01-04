@@ -119,9 +119,16 @@ namespace Richasy.Controls.Reader.Models
                     {
                         foreach (var child in node.ChildNodes)
                         {
-                            var block = await CreateElementFromNode(child, parent);
-                            if (parent == null)
-                                RenderBlocks.Add(block);
+                            try
+                            {
+                                var block = await CreateElementFromNode(child, parent);
+                                if (parent == null)
+                                    RenderBlocks.Add(block);
+                            }
+                            catch (Exception)
+                            {
+                                continue;
+                            }
                         }
                     }
                 }
